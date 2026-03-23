@@ -49,9 +49,13 @@ export const useServices = () => {
     return serviceId;
   };
 
-  const { data: services, isLoading } = useQuery({
+  const servicesQuery = useQuery({
     queryKey: ["services"],
     queryFn: fetchServices,
+    retry: false,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
+    placeholderData: (previousData) => previousData,
   });
 
   const addServiceMutation = useMutation({ 
@@ -70,8 +74,8 @@ export const useServices = () => {
   });
 
   return {
-    services,
-    isLoading,
+    services: servicesQuery.data,
+    isLoading: servicesQuery.isLoading && !servicesQuery.data,
     addService: addServiceMutation.mutateAsync,
     updateService: updateServiceMutation.mutateAsync,
     deleteService: deleteServiceMutation.mutateAsync,

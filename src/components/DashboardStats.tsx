@@ -1,29 +1,31 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Calendar, DollarSign, FileText } from "lucide-react";
+import { Users, Calendar, DollarSign, FileText, AlertCircle } from "lucide-react";
 import { usePatients } from "@/hooks/usePatients";
 import { useAppointments } from "@/hooks/useAppointments";
 import { useInvoices } from "@/hooks/useInvoices";
 import { useMedicalRecords } from "@/hooks/useMedicalRecords";
 import { isToday, startOfMonth, endOfMonth } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const DashboardStats = () => {
-  const { patients, isLoading: isLoadingPatients } = usePatients();
-  const { appointments, isLoading: isLoadingAppointments } = useAppointments();
-  const { invoices, isLoading: isLoadingInvoices } = useInvoices();
+  const { patients, isLoading: isLoadingPatients, error: errorPatients } = usePatients();
+  const { appointments, isLoading: isLoadingAppointments, error: errorAppointments } = useAppointments();
+  const { invoices, isLoading: isLoadingInvoices, error: errorInvoices } = useInvoices();
   const { data: allMedicalRecords, isLoading: isLoadingMedicalRecords } = useMedicalRecords(null);
 
   const isLoading = isLoadingPatients || isLoadingAppointments || isLoadingInvoices || isLoadingMedicalRecords;
+  const hasError = errorPatients || errorAppointments || errorInvoices;
 
   const totalPatients = patients?.length ?? 0;
   const todayAppointmentsCount = appointments?.filter(appt => isToday(new Date(appt.appointment_date_time))).length ?? 0;
-  
+
   // Calculate monthly revenue from paid invoices
   const currentMonth = new Date();
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
-  
+
   const monthlyRevenue = invoices?.filter(invoice => {
     const invoiceDate = new Date(invoice.created_at);
     return invoiceDate >= monthStart && invoiceDate <= monthEnd && invoice.payment_status === 'paid';
@@ -70,7 +72,18 @@ const DashboardStats = () => {
       bgColor: "bg-purple-100"
     }
   ];
-  
+
+  if (hasError) {
+    return (
+      <Alert variant="destructive" className="mb-4">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          Gagal memuat data: {errorPatients?.message || errorAppointments?.message || errorInvoices?.message || 'Unknown error'}
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -31,6 +31,8 @@ export const useMedicalRecords = (patientId) => {
     queryKey: ['medicalRecords', patientId],
     queryFn: fetchMedicalRecords,
     enabled: !!patientId,
+    retry: false,
+    staleTime: 1000 * 60 * 5,
   });
 
   const addMutation = useMutation({

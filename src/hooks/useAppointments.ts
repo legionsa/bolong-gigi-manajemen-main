@@ -75,6 +75,10 @@ export const useAppointments = () => {
   const appointmentsQuery = useQuery({
     queryKey: ['appointments'],
     queryFn: fetchAppointments,
+    retry: false,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
+    placeholderData: (previousData) => previousData,
   });
 
   const addAppointmentMutation = useMutation({
@@ -93,7 +97,7 @@ export const useAppointments = () => {
 
   return {
     appointments: appointmentsQuery.data,
-    isLoading: appointmentsQuery.isLoading,
+    isLoading: appointmentsQuery.isLoading && !appointmentsQuery.data,
     addAppointment: addAppointmentMutation.mutateAsync,
     isAdding: addAppointmentMutation.isPending,
     updateAppointment: updateAppointmentMutation.mutateAsync,

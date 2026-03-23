@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>InClinic | Clinical Curator Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "outline-variant": "#bdc9ca",
+              "on-error-container": "#93000a",
+              "primary-container": "#007b83",
+              "error": "#ba1a1a",
+              "primary-fixed-dim": "#7ad5dd",
+              "background": "#f7f9fb",
+              "surface-container-lowest": "#ffffff",
+              "surface": "#f7f9fb",
+              "on-surface": "#191c1e",
+              "tertiary-fixed-dim": "#ffb785",
+              "error-container": "#ffdad6",
+              "on-background": "#191c1e",
+              "secondary-fixed": "#d7e2ff",
+              "inverse-surface": "#2d3133",
+              "on-tertiary": "#ffffff",
+              "primary": "#006067",
+              "secondary": "#545e76",
+              "on-tertiary-fixed-variant": "#6f3808",
+              "secondary-fixed-dim": "#bbc6e2",
+              "primary-fixed": "#96f1fa",
+              "on-tertiary-fixed": "#301400",
+              "tertiary-container": "#a05f2e",
+              "surface-container-low": "#f2f4f6",
+              "on-primary-fixed": "#002022",
+              "on-secondary-fixed": "#101b30",
+              "tertiary-fixed": "#ffdcc6",
+              "on-secondary": "#ffffff",
+              "outline": "#6e797a",
+              "on-surface-variant": "#3e494a",
+              "tertiary": "#834718",
+              "surface-variant": "#e0e3e5",
+              "surface-container-high": "#e6e8ea",
+              "on-tertiary-container": "#fff1e9",
+              "on-primary-fixed-variant": "#004f54",
+              "surface-dim": "#d8dadc",
+              "on-primary-container": "#d0fbff",
+              "surface-bright": "#f7f9fb",
+              "inverse-on-surface": "#eff1f3",
+              "on-secondary-container": "#5a647c",
+              "on-error": "#ffffff",
+              "surface-tint": "#006970",
+              "surface-container": "#eceef0",
+              "on-primary": "#ffffff",
+              "inverse-primary": "#7ad5dd",
+              "surface-container-highest": "#e0e3e5",
+              "on-secondary-fixed-variant": "#3c475d",
+              "secondary-container": "#d7e2ff"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, .font-headline { font-family: 'Manrope', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .shadow-long {
+            box-shadow: 0px 20px 40px rgba(25, 28, 30, 0.06);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface antialiased">
+<!-- SideNavBar -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-slate-100 dark:bg-slate-900 flex flex-col py-8 px-4 z-50">
+<div class="mb-10 px-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white">
+<span class="material-symbols-outlined" data-icon="medical_services">medical_services</span>
+</div>
+<div>
+<h1 class="text-2xl font-black text-teal-900 dark:text-teal-50 leading-none">InClinic</h1>
+<p class="text-[10px] uppercase tracking-[0.15em] text-teal-700 font-bold opacity-70">Clinical Curator</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center space-x-3 bg-teal-100 dark:bg-teal-800/50 text-teal-900 dark:text-teal-100 rounded-full px-4 py-3 scale-95 duration-200 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-medium">Overview</span>
+</a>
+<a class="flex items-center space-x-3 text-slate-600 dark:text-slate-400 px-4 py-3 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors rounded-full" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-medium">Patients</span>
+</a>
+<a class="flex items-center space-x-3 text-slate-600 dark:text-slate-400 px-4 py-3 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors rounded-full" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_today">calendar_today</span>
+<span class="font-medium">Appointments</span>
+</a>
+<a class="flex items-center space-x-3 text-slate-600 dark:text-slate-400 px-4 py-3 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors rounded-full" href="#">
+<span class="material-symbols-outlined" data-icon="medical_services">medical_services</span>
+<span class="font-medium">Medical Staff</span>
+</a>
+<a class="flex items-center space-x-3 text-slate-600 dark:text-slate-400 px-4 py-3 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors rounded-full" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span class="font-medium">Billing</span>
+</a>
+<a class="flex items-center space-x-3 text-slate-600 dark:text-slate-400 px-4 py-3 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors rounded-full" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-medium">Settings</span>
+</a>
+</nav>
+<div class="mt-auto px-2">
+<button class="w-full bg-primary text-white rounded-xl py-4 font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+                New Appointment
+            </button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 min-h-screen">
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 w-[calc(100%-16rem)] z-40 flex justify-between items-center h-20 px-8 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md shadow-long">
+<div class="flex items-center gap-6">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" data-icon="search">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-full w-64 focus:ring-2 focus:ring-primary/20 text-sm transition-all" placeholder="Search patients or records..." type="text"/>
+</div>
+<p class="text-slate-500 font-medium italic text-sm">Another day, another set of smiles</p>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2">
+<button class="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+</button>
+</div>
+<div class="h-8 w-[1px] bg-slate-200"></div>
+<div class="flex items-center gap-3">
+<div class="text-right">
+<p class="text-sm font-bold text-teal-900">Dr. Smith</p>
+<p class="text-[10px] text-slate-500 font-medium">Head Curator</p>
+</div>
+<div class="w-10 h-10 rounded-full bg-teal-100 overflow-hidden ring-2 ring-white">
+<img alt="Dr. Smith Profile" class="w-full h-full object-cover" data-alt="Portrait of a friendly male dentist" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC-pPlU4HlMzCdJTgKx0UEGXCDmKf6JgZSs8_VA8sdYiUjayI0JhBjCpB1xbelWOxXljSV4a8bziRanpwf4Wt2EX6LVO-JY1DIKRYcAEClJfVbCjXMm-gAYMii-08aaktehvlFRhUV135iLmqYn5SmX9EE9HOGiKaPbHEZAWdDXPF0VLNnefU4fUgJScHXEfj09rNS9Dp9ZHsjnUzh_lxfI0vZLCzQ5UV7KB2eb_nv6I_JctwGKARLMQiGc-Oza-bGT-p3i8aJckxp8"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Dashboard Content -->
+<div class="pt-28 px-8 pb-12 space-y-10">
+<!-- Welcome Header -->
+<div class="flex justify-between items-end">
+<div>
+<h2 class="text-4xl font-extrabold text-teal-900 tracking-tight">Open wide for your data.</h2>
+<p class="text-slate-500 mt-2 font-medium">Keeping smiles bright and schedules tight today.</p>
+</div>
+<div class="bg-surface-container-highest/30 px-4 py-2 rounded-lg border border-outline-variant/10">
+<span class="text-xs font-bold text-teal-700 uppercase tracking-widest">Clinic Status: </span>
+<span class="text-xs font-bold text-primary">Operating smoothly</span>
+</div>
+</div>
+<!-- Section 1: Top Stats (Asymmetric Cards) -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+<!-- Total Patients -->
+<div class="bg-surface-container-lowest p-6 rounded-2xl shadow-long border border-outline-variant/5 relative overflow-hidden group">
+<div class="relative z-10">
+<p class="text-slate-500 text-sm font-medium mb-1">Total Patients</p>
+<h3 class="text-3xl font-extrabold text-teal-900">1,248 Smilers</h3>
+<div class="mt-4 flex items-center gap-2 text-primary font-bold text-xs bg-primary-fixed/30 w-fit px-2 py-1 rounded">
+<span class="material-symbols-outlined text-sm" data-icon="trending_up">trending_up</span>
+                            +12% this month
+                        </div>
+</div>
+<div class="absolute -right-4 -bottom-4 opacity-5 group-hover:scale-110 transition-transform duration-500">
+<span class="material-symbols-outlined text-8xl" data-icon="group" style="font-variation-settings: 'FILL' 1;">group</span>
+</div>
+</div>
+<!-- Today's Appointments -->
+<div class="bg-surface-container-lowest p-6 rounded-2xl shadow-long border border-outline-variant/5 relative overflow-hidden group">
+<div class="relative z-10">
+<p class="text-slate-500 text-sm font-medium mb-1">Today's Schedule</p>
+<h3 class="text-3xl font-extrabold text-teal-900">12 Open Wide</h3>
+<p class="text-xs text-slate-400 mt-4 italic">4 slots remaining today</p>
+</div>
+<div class="absolute -right-4 -bottom-4 opacity-5 group-hover:scale-110 transition-transform duration-500">
+<span class="material-symbols-outlined text-8xl" data-icon="event" style="font-variation-settings: 'FILL' 1;">event</span>
+</div>
+</div>
+<!-- Revenue -->
+<div class="bg-surface-container-lowest p-6 rounded-2xl shadow-long border border-outline-variant/5 relative overflow-hidden group">
+<div class="relative z-10">
+<p class="text-slate-500 text-sm font-medium mb-1">Monthly Revenue</p>
+<h3 class="text-3xl font-extrabold text-teal-900">Rp 450M</h3>
+<p class="text-xs text-primary-container font-bold mt-4">Sparkling results</p>
+</div>
+<div class="absolute -right-4 -bottom-4 opacity-5 group-hover:scale-110 transition-transform duration-500">
+<span class="material-symbols-outlined text-8xl" data-icon="payments" style="font-variation-settings: 'FILL' 1;">payments</span>
+</div>
+</div>
+<!-- Active Cases -->
+<div class="bg-surface-container-lowest p-6 rounded-2xl shadow-long border border-outline-variant/5 relative overflow-hidden group">
+<div class="relative z-10">
+<p class="text-slate-500 text-sm font-medium mb-1">Active Cases</p>
+<h3 class="text-3xl font-extrabold text-teal-900">84 Progressing</h3>
+<div class="w-full bg-slate-100 h-1.5 rounded-full mt-5">
+<div class="bg-primary h-full w-3/4 rounded-full"></div>
+</div>
+</div>
+<div class="absolute -right-4 -bottom-4 opacity-5 group-hover:scale-110 transition-transform duration-500">
+<span class="material-symbols-outlined text-8xl" data-icon="clinical_notes" style="font-variation-settings: 'FILL' 1;">clinical_notes</span>
+</div>
+</div>
+</div>
+<!-- Bento Grid Content -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Section 2: The Daily Drill (Upcoming Appointments) -->
+<div class="lg:col-span-2 space-y-6">
+<div class="flex items-center justify-between">
+<h3 class="text-2xl font-extrabold text-teal-900">The Daily Drill</h3>
+<button class="text-primary font-bold text-sm hover:underline">View Calendar</button>
+</div>
+<div class="bg-surface-container-lowest rounded-3xl p-2 shadow-long">
+<div class="overflow-hidden">
+<table class="w-full text-left border-separate border-spacing-y-4 px-4">
+<thead>
+<tr class="text-slate-400 text-[10px] uppercase tracking-widest font-bold">
+<th class="pb-2 pl-4">Time</th>
+<th class="pb-2">Patient</th>
+<th class="pb-2">Procedure</th>
+<th class="pb-2">Status</th>
+<th class="pb-2 text-right pr-4">Action</th>
+</tr>
+</thead>
+<tbody>
+<tr class="bg-surface-container-low/50 group hover:bg-teal-50/50 transition-colors">
+<td class="py-5 pl-4 first:rounded-l-2xl">
+<p class="text-sm font-bold text-teal-900">09:00 AM</p>
+</td>
+<td>
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden">
+<img alt="Patient" class="w-full h-full object-cover" data-alt="Portrait of a female patient" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJHv8sWx2W43mzzVNJ7r3416597FzocDygp9L9lwSetAfNIKYDnwkl5US-HpKIzFl23OC6sDsE6g8BC2bY8X1YVA3u4ZIJhX0fXP1T0TmZNXAh0my9uHMkqFLbeHm-lYVhbV4KygfJiCiDl53EjmamKFn-KCTYz-TmswFtSgDbhg_-vgKoxAbu_wyHBEyCIIo30m0zy3CtJyZH_UwxH1yzzp7emfyv0XICzlCt_pT5WlvVQ10-6SRnj6FIkwDsl5MTH-LoYWd_Sa-y"/>
+</div>
+<p class="text-sm font-semibold text-slate-800">Sarah Jenkins</p>
+</div>
+</td>
+<td>
+<p class="text-sm text-slate-600">Root Canal</p>
+</td>
+<td>
+<span class="bg-primary-container text-on-primary-container text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider">Confirmed</span>
+</td>
+<td class="text-right pr-4 last:rounded-r-2xl">
+<button class="text-slate-400 hover:text-primary"><span class="material-symbols-outlined">more_horiz</span></button>
+</td>
+</tr>
+<tr class="group hover:bg-teal-50/50 transition-colors">
+<td class="py-5 pl-4 first:rounded-l-2xl">
+<p class="text-sm font-bold text-teal-900">10:30 AM</p>
+</td>
+<td>
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden">
+<img alt="Patient" class="w-full h-full object-cover" data-alt="Portrait of a male patient" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOcBOYJW7KTrCOgHuXRvr8RWN27teDoKf6DwgVCre5-JEEdTWuVBKTGtkQVasGJLhJssHcbmlS47c1yx7KDVEnvxvEQ5YbhjtMVky5xXrRsDPn87Usc2PWP2LTIPMB9_a4WhV6hGoqkdx11NKn6POlp8kDDSU2cBO9cOGrvUOruiw-RMkK8mEvNEbZTPL8xBrG3MLRdb28kKam4j2Rex0qWwsyGKOwhkwvJ783AdBmZh3Vy2ScP-AFWQwSK4yTXJ2I6MQtz916cuMS"/>
+</div>
+<p class="text-sm font-semibold text-slate-800">Michael Ross</p>
+</div>
+</td>
+<td>
+<p class="text-sm text-slate-600">Deep Cleaning</p>
+</td>
+<td>
+<span class="bg-secondary-fixed text-on-secondary-fixed text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider">Arriving</span>
+</td>
+<td class="text-right pr-4 last:rounded-r-2xl">
+<button class="text-slate-400 hover:text-primary"><span class="material-symbols-outlined">more_horiz</span></button>
+</td>
+</tr>
+<tr class="bg-surface-container-low/50 group hover:bg-teal-50/50 transition-colors">
+<td class="py-5 pl-4 first:rounded-l-2xl">
+<p class="text-sm font-bold text-teal-900">01:15 PM</p>
+</td>
+<td>
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden">
+<img alt="Patient" class="w-full h-full object-cover" data-alt="Portrait of a female patient" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCqI8JGWR_lSzbXyivTxvMxhPLh8kxbGf5WARGby5MtvzfUdI7EsAJ0Z3SNr478qBkF6_FAXLF__7NXThMFCZytffLgYc5ocLSBzmp8hZlvfhqu625wohUOwKSo0205IciIHUsn5hmmq_ZgFfZAidO6vIrlnnk1itJ60_uOHnhjK9BPKEN06DWPAluc07NiVFxjMU-9Dc-8Y5AkwdiOBD4Q4rfY__JJbAQaf2466jQabdBAuD1s-hmIQ55dNsTwHbilN0NcbLXt7oFz"/>
+</div>
+<p class="text-sm font-semibold text-slate-800">Elena Gilbert</p>
+</div>
+</td>
+<td>
+<p class="text-sm text-slate-600">Wisdom Extraction</p>
+</td>
+<td>
+<span class="bg-tertiary-fixed text-on-tertiary-fixed-variant text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider">Waitlist</span>
+</td>
+<td class="text-right pr-4 last:rounded-r-2xl">
+<button class="text-slate-400 hover:text-primary"><span class="material-symbols-outlined">more_horiz</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Section 3: Recent Activity (Feed Style) -->
+<div class="space-y-6">
+<h3 class="text-2xl font-extrabold text-teal-900">Recent Pulse</h3>
+<div class="bg-surface-container-low rounded-3xl p-6 shadow-sm space-y-8">
+<div class="flex gap-4">
+<div class="w-10 h-10 rounded-full bg-primary-fixed flex-shrink-0 flex items-center justify-center text-on-primary-fixed-variant">
+<span class="material-symbols-outlined text-sm" data-icon="person_add">person_add</span>
+</div>
+<div>
+<p class="text-sm font-medium text-on-surface">Dr. Smith added a patient</p>
+<p class="text-xs text-slate-500 mt-1">Sarah Jenkins was onboarded</p>
+<p class="text-[10px] font-bold text-slate-400 mt-2 uppercase">12 mins ago</p>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="w-10 h-10 rounded-full bg-secondary-fixed flex-shrink-0 flex items-center justify-center text-on-secondary-fixed">
+<span class="material-symbols-outlined text-sm" data-icon="receipt_long">receipt_long</span>
+</div>
+<div>
+<p class="text-sm font-medium text-on-surface">Invoice #4290 Paid</p>
+<p class="text-xs text-slate-500 mt-1">Rp 12,500,000 processed</p>
+<p class="text-[10px] font-bold text-slate-400 mt-2 uppercase">2 hours ago</p>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="w-10 h-10 rounded-full bg-tertiary-fixed flex-shrink-0 flex items-center justify-center text-on-tertiary-fixed">
+<span class="material-symbols-outlined text-sm" data-icon="sync">sync</span>
+</div>
+<div>
+<p class="text-sm font-medium text-on-surface">Schedule Re-organized</p>
+<p class="text-xs text-slate-500 mt-1">Optimization for tomorrow complete</p>
+<p class="text-[10px] font-bold text-slate-400 mt-2 uppercase">5 hours ago</p>
+</div>
+</div>
+<div class="pt-4 border-t border-outline-variant/20 text-center">
+<button class="text-xs font-bold text-primary tracking-widest uppercase hover:text-primary-container transition-colors">See all activity</button>
+</div>
+</div>
+<!-- Dental Tip Card -->
+<div class="bg-teal-900 rounded-3xl p-6 text-white relative overflow-hidden group">
+<h4 class="text-lg font-bold mb-2">Curator's Pro Tip</h4>
+<p class="text-teal-200 text-xs leading-relaxed opacity-80">Regular check-ups reduce patient churn by 24%. Have you scheduled your 'Smile Back' reminders this week?</p>
+<div class="absolute -right-8 -bottom-8 opacity-10 group-hover:rotate-12 transition-transform duration-700">
+<span class="material-symbols-outlined text-[120px]" data-icon="verified">verified</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

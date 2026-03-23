@@ -5,10 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PenLine, Trash2, Plus } from "lucide-react";
 import { DoctorScheduleList } from "./schedule/DoctorScheduleList";
+import { Skeleton } from "@/components/ui/skeleton";
 
-export const DoctorRow = ({ 
-  doctor, 
-  isSelected, 
+export const DoctorRow = ({
+  doctor,
+  isSelected,
   onSelect,
   onEditDoctor,
   onDeleteDoctor,
@@ -54,12 +55,18 @@ export const DoctorRow = ({
                   Tambah Jadwal
                 </Button>
               </div>
-              {isLoadingSchedules && <div>Memuat jadwal...</div>}
+              {isLoadingSchedules && (
+                <div className="space-y-2">
+                  {[1, 2, 3].map((i) => (
+                    <Skeleton key={i} className="h-8 w-full" />
+                  ))}
+                </div>
+              )}
               {!isLoadingSchedules && (
-                <DoctorScheduleList 
-                  schedules={schedules || []} 
-                  onEdit={(sched) => onOpenScheduleModal(doctor, sched)} 
-                  onDelete={onDeleteSchedule} 
+                <DoctorScheduleList
+                  schedules={schedules || []}
+                  onEdit={(sched) => onOpenScheduleModal(doctor, sched)}
+                  onDelete={onDeleteSchedule}
                 />
               )}
             </div>

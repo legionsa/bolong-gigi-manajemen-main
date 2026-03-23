@@ -8,19 +8,22 @@ export const useClinicSettings = () => {
   const fetchClinicSettings = async () => {
     const { data, error } = await supabase.from('clinic_settings').select('*').limit(1);
     if (error) throw new Error(error.message);
-    return data[0];
+    return data?.[0] ?? {}; // Return empty object instead of undefined
   };
 
   const updateSettings = async (settings) => {
     const { id, ...updateData } = settings;
     const { data, error } = await supabase.from('clinic_settings').update(updateData).eq('id', id).select();
     if (error) throw new Error(error.message);
-    return data[0];
+    return data?.[0] ?? {};
   };
 
   const settingsQuery = useQuery({
     queryKey: ['clinicSettings'],
     queryFn: fetchClinicSettings,
+    staleTime: 1000 * 60 * 30,
+    gcTime: 1000 * 60 * 60 * 24,
+    placeholderData: (previousData) => previousData,
   });
 
   const updateSettingsMutation = useMutation({
@@ -33,7 +36,7 @@ export const useClinicSettings = () => {
 
   return {
     settings: settingsQuery.data,
-    isLoading: settingsQuery.isLoading,
+    isLoading: settingsQuery.isLoading && !settingsQuery.data,
     updateSettings: updateSettingsMutation.mutateAsync,
     isUpdating: updateSettingsMutation.isPending,
   };

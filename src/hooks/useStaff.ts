@@ -63,29 +63,33 @@ export const useStaff = () => {
     return staffId;
   };
 
-  const { data: staff, isLoading } = useQuery({
+  const staffQuery = useQuery({
     queryKey: ["staff"],
     queryFn: fetchStaff,
+    retry: false,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
+    placeholderData: (previousData) => previousData,
   });
 
-  const addStaffMutation = useMutation({ 
-    mutationFn: addStaff, 
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["staff"] }) 
+  const addStaffMutation = useMutation({
+    mutationFn: addStaff,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["staff"] })
   });
-  
-  const updateStaffMutation = useMutation({ 
-    mutationFn: updateStaff, 
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["staff"] }) 
+
+  const updateStaffMutation = useMutation({
+    mutationFn: updateStaff,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["staff"] })
   });
-  
-  const deleteStaffMutation = useMutation({ 
-    mutationFn: deleteStaff, 
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["staff"] }) 
+
+  const deleteStaffMutation = useMutation({
+    mutationFn: deleteStaff,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["staff"] })
   });
 
   return {
-    staff,
-    isLoading,
+    staff: staffQuery.data,
+    isLoading: staffQuery.isLoading && !staffQuery.data,
     addStaff: addStaffMutation.mutateAsync,
     adding: addStaffMutation.isPending,
     updating: updateStaffMutation.isPending,

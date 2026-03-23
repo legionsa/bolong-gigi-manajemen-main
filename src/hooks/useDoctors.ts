@@ -33,29 +33,33 @@ export const useDoctors = () => {
     return doctorId;
   };
 
-  const { data: doctors, isLoading } = useQuery({
+  const doctorsQuery = useQuery({
     queryKey: ["doctors"],
     queryFn: fetchDoctors,
+    retry: false,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
+    placeholderData: (previousData) => previousData,
   });
 
-  const addDoctorMutation = useMutation({ 
-    mutationFn: addDoctor, 
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["doctors"] }) 
+  const addDoctorMutation = useMutation({
+    mutationFn: addDoctor,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["doctors"] })
   });
-  
-  const updateDoctorMutation = useMutation({ 
-    mutationFn: updateDoctor, 
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["doctors"] }) 
+
+  const updateDoctorMutation = useMutation({
+    mutationFn: updateDoctor,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["doctors"] })
   });
-  
-  const deleteDoctorMutation = useMutation({ 
-    mutationFn: deleteDoctor, 
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["doctors"] }) 
+
+  const deleteDoctorMutation = useMutation({
+    mutationFn: deleteDoctor,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["doctors"] })
   });
 
   return {
-    doctors,
-    isLoading,
+    doctors: doctorsQuery.data,
+    isLoading: doctorsQuery.isLoading && !doctorsQuery.data,
     addDoctor: addDoctorMutation.mutateAsync,
     adding: addDoctorMutation.isPending,
     updating: updateDoctorMutation.isPending,

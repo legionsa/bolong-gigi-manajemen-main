@@ -26,6 +26,9 @@ export const useUserProfile = () => {
     queryKey: ["userProfile", user?.id],
     queryFn: fetchUserProfile,
     enabled: !!user,
+    staleTime: 1000 * 60 * 30,
+    gcTime: 1000 * 60 * 60,
+    placeholderData: (previousData) => previousData,
   });
 
   const updateUserProfile = async (updates: { full_name?: string; avatar_url?: string; phone_number?: string }) => {

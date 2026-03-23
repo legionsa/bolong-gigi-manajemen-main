@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import { useAppointments } from '@/hooks/useAppointments';
 import { format, addDays, subDays, isToday } from 'date-fns';
 import { id } from 'date-fns/locale';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export const TodayAppointments = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -58,7 +59,21 @@ export const TodayAppointments = () => {
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <p className="text-muted-foreground">Memuat jadwal...</p>
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-24" />
+                  <Skeleton className="h-3 w-20" />
+                </div>
+                <div className="space-y-2 text-right">
+                  <Skeleton className="h-4 w-12" />
+                  <Skeleton className="h-3 w-16" />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : filteredAppointments.length > 0 ? (
           <div className="space-y-3">
             {filteredAppointments.map((appointment) => (

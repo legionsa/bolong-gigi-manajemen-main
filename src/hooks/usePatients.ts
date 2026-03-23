@@ -12,8 +12,12 @@ export const usePatients = () => {
   };
 
   const addPatient = async (newPatient) => {
-    // Remove the auto-generation logic and use the patient number as provided
-    const { data, error } = await supabase.from('patients').insert([newPatient]).select();
+    console.log('Adding patient:', newPatient);
+
+    const result = await supabase.from('patients').insert([newPatient]).select();
+    console.log('Add patient result:', result);
+
+    const { data, error } = result;
     if (error) throw new Error(error.message);
     return data[0];
   };
@@ -27,27 +31,46 @@ export const usePatients = () => {
   const patientsQuery = useQuery({
     queryKey: ['patients'],
     queryFn: fetchPatients,
+    retry: false,
+    staleTime: 1000 * 60 * 30, // Data stays fresh for 30 minutes
+    gcTime: 1000 * 60 * 60, // Keep in cache for 1 hour
+    placeholderData: (previousData) => previousData, // Show old data during refetch
   });
 
   const addPatientMutation = useMutation({
     mutationFn: addPatient,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['patients'] });
+      try {
+        queryClient.invalidateQueries({ queryKey: ['patients'] });
+      } catch (e) {
+        console.error('InvalidateQueries error:', e);
+      }
+    },
+    onError: (error) => {
+      console.error('Add patient error:', error);
     },
   });
 
   const updatePatientMutation = useMutation({
     mutationFn: updatePatient,
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['patients'] });
+    onSuccess: () => {
+      try {
+        queryClient.invalidateQueries({ queryKey: ['patients'] });
+      } catch (e) {
+        console.error('InvalidateQueries error:', e);
+      }
     },
   });
 
   return {
     patients: patientsQuery.data,
-    isLoading: patientsQuery.isLoading,
+    // Use isFetching instead of isLoading to show data immediately from cache
+    isLoading: patientsQuery.isLoading && !patientsQuery.data,
+    isRefreshing: patientsQuery.isFetching && !!patientsQuery.data,
+    error: patientsQuery.error,
     addPatient: addPatientMutation.mutateAsync,
     isAdding: addPatientMutation.isPending,
+    addError: addPatientMutation.error,
     updatePatient: updatePatientMutation.mutateAsync,
     isUpdating: updatePatientMutation.isPending,
   };

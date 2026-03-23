@@ -13,7 +13,17 @@ import Settings from './pages/Settings';
 import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      gcTime: Infinity,
+      staleTime: Infinity,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      retry: 2,
+    },
+  },
+});
 
 function App() {
   return (

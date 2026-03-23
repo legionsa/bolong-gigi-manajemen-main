@@ -68,6 +68,10 @@ export const useInvoices = () => {
   const invoicesQuery = useQuery({
     queryKey: ['invoices'],
     queryFn: fetchInvoices,
+    retry: false,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
+    placeholderData: (previousData) => previousData,
   });
 
   const createInvoiceMutation = useMutation({
@@ -97,7 +101,7 @@ export const useInvoices = () => {
 
   return {
     invoices: invoicesQuery.data,
-    isLoading: invoicesQuery.isLoading,
+    isLoading: invoicesQuery.isLoading && !invoicesQuery.data,
     createInvoice: createInvoiceMutation.mutateAsync,
     isCreating: createInvoiceMutation.isPending,
     updateInvoice: updateInvoiceMutation.mutateAsync,

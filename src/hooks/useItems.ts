@@ -50,29 +50,33 @@ export const useItems = () => {
     return itemId;
   };
 
-  const { data: items, isLoading } = useQuery({
+  const itemsQuery = useQuery({
     queryKey: ["items"],
     queryFn: fetchItems,
+    retry: false,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
+    placeholderData: (previousData) => previousData,
   });
 
-  const addItemMutation = useMutation({ 
-    mutationFn: addItem, 
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["items"] }) 
+  const addItemMutation = useMutation({
+    mutationFn: addItem,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["items"] })
   });
-  
-  const updateItemMutation = useMutation({ 
-    mutationFn: updateItem, 
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["items"] }) 
+
+  const updateItemMutation = useMutation({
+    mutationFn: updateItem,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["items"] })
   });
-  
-  const deleteItemMutation = useMutation({ 
-    mutationFn: deleteItem, 
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["items"] }) 
+
+  const deleteItemMutation = useMutation({
+    mutationFn: deleteItem,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["items"] })
   });
 
   return {
-    items,
-    isLoading,
+    items: itemsQuery.data,
+    isLoading: itemsQuery.isLoading && !itemsQuery.data,
     addItem: addItemMutation.mutateAsync,
     updateItem: updateItemMutation.mutateAsync,
     deleteItem: deleteItemMutation.mutateAsync,
