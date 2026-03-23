@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -8,7 +7,8 @@ import {
   DropdownMenu, 
   DropdownMenuContent, 
   DropdownMenuItem, 
-  DropdownMenuTrigger 
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
@@ -17,7 +17,9 @@ import {
   User,
   Menu,
   X,
-  Smile
+  Smile,
+  ExternalLink,
+  Calendar
 } from 'lucide-react';
 
 export const Header = () => {
@@ -38,10 +40,33 @@ export const Header = () => {
   return (
     <header className="bg-white border-b">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-        <Link to="/dashboard" className="flex items-center gap-2 text-xl font-bold">
-          <Smile className="w-6 h-6 text-blue-600" />
-          {clinicName}
-        </Link>
+        <div className="flex items-center gap-6">
+          <Link to="/dashboard" className="flex items-center gap-2 text-xl font-bold">
+            <Smile className="w-6 h-6 text-blue-600" />
+            {clinicName}
+          </Link>
+
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center gap-4">
+            <Link 
+              to="/booking" 
+              className="text-sm text-gray-600 hover:text-gray-900 flex items-center gap-1"
+              target="_blank"
+            >
+              <Calendar className="w-4 h-4" />
+              Online Booking
+            </Link>
+            <a 
+              href="/portal/login" 
+              className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <ExternalLink className="w-4 h-4" />
+              Patient Portal
+            </a>
+          </nav>
+        </div>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -65,6 +90,14 @@ export const Header = () => {
                 <span>Pengaturan</span>
               </Link>
             </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <a href="/portal/login" target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="w-4 h-4 mr-2" />
+                <span>Patient Portal</span>
+              </a>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
               <LogOut className="w-4 h-4 mr-2" />
               <span>Keluar</span>
