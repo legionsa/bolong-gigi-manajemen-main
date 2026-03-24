@@ -16,6 +16,15 @@ import PortalRegister from './pages/portal/PortalRegister';
 import PortalDashboard from './pages/portal/PortalDashboard';
 import PortalProfile from './pages/portal/PortalProfile';
 import OnlineBooking from './pages/booking/OnlineBooking';
+import ControlRoomDashboard from './pages/controlroom/ControlRoomDashboard';
+import ClinicRegistry from './pages/controlroom/ClinicRegistry';
+import UserManagement from './pages/controlroom/UserManagement';
+import WhatsAppHub from './pages/controlroom/WhatsAppHub';
+import OtpSettings from './pages/controlroom/OtpSettings';
+import IncidentManagement from './pages/controlroom/IncidentManagement';
+import AnnouncementsManager from './pages/controlroom/AnnouncementsManager';
+import AuditLogExplorer from './pages/controlroom/AuditLogExplorer';
+import IntegrationVault from './pages/controlroom/IntegrationVault';
 import './App.css';
 
 const queryClient = new QueryClient({
@@ -47,6 +56,16 @@ function App() {
             <Route path="/portal/register" element={<PortalRegister />} />
             <Route path="/portal/dashboard" element={<PortalDashboard />} />
             <Route path="/portal/profile" element={<PortalProfile />} />
+            {/* Control Room */}
+            <Route path="/controlroom" element={<ControlRoomDashboard />} />
+            <Route path="/controlroom/clinics" element={<ClinicRegistry />} />
+            <Route path="/controlroom/users" element={<UserManagement />} />
+            <Route path="/controlroom/whatsapp" element={<WhatsAppHub />} />
+            <Route path="/controlroom/otp-settings" element={<OtpSettings />} />
+            <Route path="/controlroom/incidents" element={<IncidentManagement />} />
+            <Route path="/controlroom/announcements" element={<AnnouncementsManager />} />
+            <Route path="/controlroom/audit-log" element={<AuditLogExplorer />} />
+            <Route path="/controlroom/integrations" element={<IntegrationVault />} />
             {/* Online Booking */}
             <Route path="/booking" element={<OnlineBooking />} />
             <Route path="/404" element={<NotFound />} />

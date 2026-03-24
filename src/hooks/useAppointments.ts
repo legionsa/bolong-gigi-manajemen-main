@@ -18,6 +18,17 @@ export const useAppointments = () => {
     const { data: patientData } = await supabase.from('patients').select('full_name').eq('id', patient_id).single();
     const { data: dentistData } = await supabase.from('users').select('full_name').eq('id', dentist_id).single();
 
+    // Try to find matching service by name, or use null if not found
+    let serviceId = null;
+    if (service_name) {
+      const { data: serviceData } = await supabase
+        .from('services')
+        .select('id')
+        .ilike('name', service_name)
+        .maybeSingle();
+      serviceId = serviceData?.id || null;
+    }
+
     const appointmentToInsert = {
         patient_id,
         dentist_id,
@@ -26,7 +37,7 @@ export const useAppointments = () => {
         notes,
         patient_name: patientData?.full_name || 'N/A',
         dentist_name: dentistData?.full_name || 'N/A',
-        service_id: service_name.toLowerCase().replace(' ', '-'), // simple service id
+        service_id: serviceId, // Proper UUID or null
         status: 'Dijadwalkan',
         duration_in_minutes: 30,
     };
