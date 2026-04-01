@@ -3,12 +3,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Calendar, FileText, CreditCard, User, LogOut, Clock, ChevronRight } from "lucide-react";
+import { Calendar, FileText, CreditCard, User, LogOut, Clock, ChevronRight, Star } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
+import { NpsSurvey } from "@/components/portal/NpsSurvey";
+import { usePatientNpsResponses } from "@/hooks/useNps";
 
 interface PatientSession {
   patient_id: string;
@@ -57,11 +59,25 @@ const PortalDashboard = () => {
   const [patient, setPatient] = useState<PatientData | null>(null);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [completedAppointments, setCompletedAppointments] = useState<Appointment[]>([]);
+  const [pendingNpsAppointments, setPendingNpsAppointments] = useState<Appointment[]>([]);
+  const { data: npsResponses } = usePatientNpsResponses(patient?.id);
   const [activeTab, setActiveTab] = useState<'appointments' | 'records' | 'invoices' | 'profile'>('appointments');
 
   useEffect(() => {
     loadPortalData();
   }, []);
+
+  // Filter completed appointments that need NPS
+  useEffect(() => {
+    if (npsResponses && completedAppointments.length > 0) {
+      const npsAppointmentIds = new Set(npsResponses.filter(n => n.appointment_id).map(n => n.appointment_id));
+      const pending = completedAppointments.filter(appt => !npsAppointmentIds.has(appt.id));
+      setPendingNpsAppointments(pending);
+    } else if (completedAppointments.length > 0) {
+      setPendingNpsAppointments(completedAppointments);
+    }
+  }, [npsResponses, completedAppointments]);
 
   const loadPortalData = async () => {
     setIsLoading(true);
@@ -100,6 +116,17 @@ const PortalDashboard = () => {
         .limit(5);
 
       setAppointments(appointmentsData || []);
+
+      // Fetch completed appointments for NPS
+      const { data: completedData } = await supabase
+        .from("appointments")
+        .select("*")
+        .eq("patient_id", parsedSession.patient_id)
+        .eq("status", "Selesai")
+        .order("appointment_date_time", { ascending: false })
+        .limit(10);
+
+      setCompletedAppointments(completedData || []);
 
       // Fetch invoices
       const { data: invoicesData } = await supabase
@@ -330,19 +357,109 @@ const PortalDashboard = () => {
 
         {/* Records Tab */}
         {activeTab === 'records' && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Rekam Medis</CardTitle>
-              <CardDescription>Riwayat kunjungan dan perawatan Anda</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8">
-                <FileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500">Fitur rekam medis akan segera hadir</p>
-                <p className="text-sm text-gray-400">Hubungi klinik untuk informasi lebih lanjut</p>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="space-y-6">
+            {/* Pending NPS Surveys */}
+            {pendingNpsAppointments.length > 0 && (
+              <Card className="border-blue-200 bg-blue-50">
+                <CardHeader>
+                  <CardTitle className="text-blue-700 flex items-center gap-2">
+                    <Star className="w-5 h-5" />
+                    Berikan Penilaian Anda
+                  </CardTitle>
+                  <CardDescription>
+                    Kami sangat menghargai masukan dari Anda untuk meningkatkan layanan kami
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {pendingNpsAppointments.slice(0, 1).map((appt) => (
+                    <NpsSurvey
+                      key={appt.id}
+                      patientId={patient?.id || ''}
+                      appointmentId={appt.id}
+                      appointmentDate={appt.appointment_date_time}
+                      serviceName={appt.service_name}
+                      doctorName={appt.dentist_name}
+                    />
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Completed Appointments */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Riwayat Kunjungan</CardTitle>
+                <CardDescription>Daftar kunjungan Anda yang telah selesai</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {completedAppointments.length === 0 ? (
+                  <div className="text-center py-8">
+                    <FileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                    <p className="text-gray-500">Belum ada riwayat kunjungan</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {completedAppointments.map((appt) => {
+                      const hasNps = npsResponses.some(n => n.appointment_id === appt.id);
+                      return (
+                        <div key={appt.id} className="flex items-center justify-between p-4 border rounded-lg">
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-gray-100 rounded-lg flex flex-col items-center justify-center">
+                              <span className="text-xs text-gray-600 font-medium">
+                                {format(new Date(appt.appointment_date_time), 'dd')}
+                              </span>
+                              <span className="text-sm font-bold text-gray-600">
+                                {format(new Date(appt.appointment_date_time), 'MMM')}
+                              </span>
+                            </div>
+                            <div>
+                              <p className="font-medium">{appt.service_name}</p>
+                              <p className="text-sm text-gray-500">
+                                Dr. {appt.dentist_name}
+                              </p>
+                            </div>
+                          </div>
+                          {hasNps ? (
+                            <Badge className="bg-green-100 text-green-800">Sudah Diisi</Badge>
+                          ) : (
+                            <Badge className="bg-yellow-100 text-yellow-800">Menunggu</Badge>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* NPS Responses History */}
+            {npsResponses.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Riwayat Penilaian</CardTitle>
+                  <CardDescription>Skor NPS dari kunjungan Anda</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {npsResponses.slice(0, 5).map((nps) => (
+                      <div key={nps.id} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div>
+                          <p className="font-medium">{format(new Date(nps.submitted_at), 'dd MMMM yyyy', { locale: id })}</p>
+                          {nps.feedback && <p className="text-sm text-gray-500">{nps.feedback}</p>}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {[...Array(nps.score)].map((_, i) => (
+                            <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                          ))}
+                          <span className="ml-2 font-bold">{nps.score}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         )}
 
         {/* Invoices Tab */}
