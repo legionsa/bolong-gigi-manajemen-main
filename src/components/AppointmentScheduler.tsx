@@ -19,18 +19,18 @@ const getStatusColor = status => {
   switch (status) {
     case 'confirmed':
     case 'Dijadwalkan':
-      return 'bg-blue-100 text-blue-800';
+      return 'bg-primary-fixed text-on-primary-fixed';
     case 'in-progress':
     case 'Berlangsung':
-      return 'bg-green-100 text-green-800';
+      return 'bg-tertiary-fixed text-on-tertiary-fixed';
     case 'completed':
     case 'Selesai':
-      return 'bg-gray-100 text-gray-800';
+      return 'bg-secondary-fixed text-on-secondary-fixed';
     case 'cancelled':
     case 'Dibatalkan':
-      return 'bg-red-100 text-red-800';
+      return 'bg-error-container text-on-error-container';
     default:
-      return 'bg-gray-100 text-gray-800';
+      return 'bg-surface-container-high text-on-surface-variant';
   }
 };
 const getStatusText = status => {
@@ -57,14 +57,14 @@ const AppointmentCard = ({
   onUpdateStatus,
   isUpdating,
   onEdit
-}) => <Card key={appointment.id} className="transition-all hover:shadow-md">
+}) => <Card key={appointment.id} className="bg-surface-container-lowest transition-all hover:shadow-md hover:shadow-primary/5">
     <CardContent className="p-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center">
+            <div className="w-16 h-16 bg-secondary-fixed rounded-xl flex items-center justify-center">
                 <div>
-                    <Clock className="w-5 h-5 text-blue-600 mx-auto mb-1" />
-                    <div className="text-xs font-medium text-blue-600">
+                    <Clock className="w-5 h-5 text-on-secondary-fixed mx-auto mb-1" />
+                    <div className="text-xs font-semibold text-on-secondary-fixed">
                         {new Date(appointment.appointment_date_time).toLocaleTimeString('id-ID', {
                 hour: '2-digit',
                 minute: '2-digit'
@@ -74,24 +74,24 @@ const AppointmentCard = ({
             </div>
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <h4 className="font-semibold text-gray-900">{appointment.patient_name}</h4>
+              <h4 className="font-semibold text-on-surface">{appointment.patient_name}</h4>
               <Badge className={getStatusColor(appointment.status)}>{getStatusText(appointment.status)}</Badge>
             </div>
-            <p className="text-sm text-gray-600 mb-1">{appointment.service_name}</p>
-            <div className="flex items-center gap-4 text-xs text-gray-500">
-              <span>👨‍⚕️ {appointment.dentist_name}</span>
-              <span>⏱️ {appointment.duration_in_minutes} menit</span>
+            <p className="text-sm text-on-surface-variant mb-1">{appointment.service_name}</p>
+            <div className="flex items-center gap-4 text-xs text-on-surface-variant">
+              <span>Dr. {appointment.dentist_name}</span>
+              <span>{appointment.duration_in_minutes} menit</span>
             </div>
           </div>
         </div>
         <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={onEdit}><Pen className="w-4 h-4 mr-2" />Edit</Button>
+            <Button variant="outline" size="sm" onClick={onEdit} className="gap-1.5"><Pen className="w-4 h-4" />Edit</Button>
             {(appointment.status === 'Dijadwalkan' || appointment.status === 'confirmed') && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button size="sm" className="bg-green-600 hover:bg-green-700">Selesai</Button>
+                  <Button size="sm" variant="medical">Selesai</Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent>
+                <AlertDialogContent className="bg-surface-container-lowest">
                   <AlertDialogHeader>
                     <AlertDialogTitle>Konfirmasi Penyelesaian</AlertDialogTitle>
                     <AlertDialogDescription>
@@ -265,9 +265,9 @@ const AppointmentScheduler = () => {
           setSelectedAppointment(null);
         }
       }}>
-        <DialogContent className="sm:max-w-[600px] flex flex-col max-h-[90vh]">
+        <DialogContent className="sm:max-w-[600px] flex flex-col max-h-[90vh] bg-surface-container-lowest">
           <DialogHeader>
-            <DialogTitle>Edit Appointment</DialogTitle>
+            <DialogTitle className="text-on-surface">Edit Appointment</DialogTitle>
             <DialogDescription>Perbarui detail appointment.</DialogDescription>
           </DialogHeader>
           <div className="flex-grow overflow-y-auto py-4 pr-6 -mr-6">
@@ -279,31 +279,36 @@ const AppointmentScheduler = () => {
             )}
           </div>
           <DialogFooter>
-            <Button type="submit" form="appointment-form" disabled={isUpdating} className="bg-blue-600 hover:bg-blue-700">
+            <Button type="submit" form="appointment-form" disabled={isUpdating} variant="medical" className="gap-2">
               {isUpdating ? 'Memperbarui...' : 'Simpan Perubahan'}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
+      <Card className="bg-surface-container-lowest shadow-sm">
+        <CardHeader className="pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <CardTitle className="flex items-center gap-2"><Calendar className="w-5 h-5 text-blue-600" />Jadwal Appointment</CardTitle>
-              <CardDescription>Kelola jadwal appointment pasien harian</CardDescription>
+              <CardTitle className="flex items-center gap-2 text-primary">
+                <div className="w-9 h-9 rounded-xl bg-secondary-fixed flex items-center justify-center">
+                  <Calendar className="w-5 h-5 text-on-secondary-fixed" />
+                </div>
+                Jadwal Appointment
+              </CardTitle>
+              <CardDescription className="mt-2">Kelola jadwal appointment pasien harian</CardDescription>
             </div>
             <Dialog open={isFormOpen} onOpenChange={setFormOpen}>
-              <DialogTrigger asChild><Button className="bg-blue-600 hover:bg-blue-700"><Plus className="w-4 h-4 mr-2" />Buat Appointment</Button></DialogTrigger>
-              <DialogContent className="sm:max-w-[600px] flex flex-col max-h-[90vh]">
+              <DialogTrigger asChild><Button variant="medical" className="gap-2 w-full sm:w-auto justify-center"><Plus className="w-4 h-4" />Buat Appointment</Button></DialogTrigger>
+              <DialogContent className="sm:max-w-[600px] flex flex-col max-h-[90vh] bg-surface-container-lowest">
                 <DialogHeader>
-                  <DialogTitle>Buat Appointment Baru</DialogTitle>
+                  <DialogTitle className="text-on-surface">Buat Appointment Baru</DialogTitle>
                   <DialogDescription>Jadwalkan appointment untuk pasien</DialogDescription>
                 </DialogHeader>
                 <div className="flex-grow overflow-y-auto py-4 pr-6 -mr-6">
                   <AppointmentForm onSubmit={handleAddAppointment} />
                 </div>
                 <DialogFooter>
-                  <Button type="submit" form="appointment-form" disabled={isAdding} className="bg-blue-600 hover:bg-blue-700">
+                  <Button type="submit" form="appointment-form" disabled={isAdding} variant="medical" className="gap-2">
                     {isAdding ? 'Menjadwalkan...' : 'Buat Appointment'}
                   </Button>
                 </DialogFooter>
@@ -321,35 +326,35 @@ const AppointmentScheduler = () => {
 
             {view === 'daily' && (
               <div className="flex items-center gap-2">
-                <Label htmlFor="date-picker" className="text-sm font-medium">Pilih Tanggal:</Label>
-                <Input 
-                  id="date-picker" 
-                  type="date" 
-                  value={format(currentDate, 'yyyy-MM-dd')} 
-                  onChange={e => setCurrentDate(new Date(e.target.value + 'T00:00:00'))} 
-                  className="w-48" 
+                <Label htmlFor="date-picker" className="text-sm font-medium text-on-surface-variant">Pilih Tanggal:</Label>
+                <Input
+                  id="date-picker"
+                  type="date"
+                  value={format(currentDate, 'yyyy-MM-dd')}
+                  onChange={e => setCurrentDate(new Date(e.target.value + 'T00:00:00'))}
+                  className="w-48 bg-surface-container-low border-0"
                 />
               </div>
             )}
           </div>
-          
-          <div className="flex items-center justify-between mb-4 border-y py-2">
-            <Button variant="outline" size="icon" onClick={goToPreviousPeriod}>
+
+          <div className="flex items-center justify-between mb-4 border-y border-outline-variant/20 py-3">
+            <Button variant="outline" size="icon" onClick={goToPreviousPeriod} className="h-9 w-9">
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <h3 className="text-lg font-semibold text-gray-900 text-center">
+            <h3 className="text-lg font-semibold text-on-surface text-center">
               {getHeaderText()}
             </h3>
-            <Button variant="outline" size="icon" onClick={goToNextPeriod}>
+            <Button variant="outline" size="icon" onClick={goToNextPeriod} className="h-9 w-9">
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
 
           <div className="space-y-4">
-            {isLoading ? [...Array(2)].map((_, i) => <Skeleton key={i} className="h-24 w-full" />) : filteredAppointments.length > 0 ? filteredAppointments.map(appointment => <AppointmentCard key={appointment.id} appointment={appointment} onUpdateStatus={handleUpdateStatus} isUpdating={isUpdating} onEdit={() => handleEditClick(appointment)} />) : <div className="text-center py-12">
-                <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-600 mb-2">Tidak ada appointment</h3>
-                <p className="text-gray-500">Tidak ada jadwal untuk periode ini. Buat appointment baru.</p>
+            {isLoading ? [...Array(2)].map((_, i) => <Skeleton key={i} className="h-24 w-full rounded-xl" />) : filteredAppointments.length > 0 ? filteredAppointments.map(appointment => <AppointmentCard key={appointment.id} appointment={appointment} onUpdateStatus={handleUpdateStatus} isUpdating={isUpdating} onEdit={() => handleEditClick(appointment)} />) : <div className="text-center py-12">
+                <Calendar className="w-16 h-16 text-on-surface-variant/30 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-on-surface mb-2">Tidak ada appointment</h3>
+                <p className="text-on-surface-variant">Tidak ada jadwal untuk periode ini. Buat appointment baru.</p>
               </div>}
           </div>
         </CardContent>

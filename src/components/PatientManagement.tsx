@@ -12,34 +12,37 @@ import { PatientForm } from "./patient/PatientForm";
 import { MedicalRecordViewer } from "./patient/MedicalRecordViewer";
 import { MedicalRecordForm } from "./patient/MedicalRecordForm";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 
 const TableSkeleton = () => (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>No. Pasien</TableHead>
-          <TableHead>Nama Lengkap</TableHead>
-          <TableHead>NIK</TableHead>
-          <TableHead>No. Telepon</TableHead>
-          <TableHead className="text-right">Aksi</TableHead>
+  <Table>
+    <TableHeader>
+      <TableRow className="hover:bg-transparent">
+        <TableHead>No. Pasien</TableHead>
+        <TableHead>Nama Lengkap</TableHead>
+        <TableHead>NIK</TableHead>
+        <TableHead>No. Telepon</TableHead>
+        <TableHead className="text-right">Aksi</TableHead>
+      </TableRow>
+    </TableHeader>
+    <TableBody>
+      {[...Array(5)].map((_, i) => (
+        <TableRow key={i} className="hover:bg-surface-container-low">
+          <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
+          <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
+          <TableCell><Skeleton className="h-4 w-[120px]" /></TableCell>
+          <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
+          <TableCell className="text-right">
+            <div className="flex justify-end gap-2">
+              <Skeleton className="h-8 w-[120px]" />
+              <Skeleton className="h-8 w-[60px]" />
+            </div>
+          </TableCell>
         </TableRow>
-      </TableHeader>
-      <TableBody>
-        {[...Array(5)].map((_, i) => (
-          <TableRow key={i}>
-            <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
-            <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
-            <TableCell><Skeleton className="h-4 w-[120px]" /></TableCell>
-            <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
-            <TableCell className="text-right space-x-2">
-              <Skeleton className="h-8 w-[120px] inline-block" />
-              <Skeleton className="h-8 w-[60px] inline-block" />
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  );
+      ))}
+    </TableBody>
+  </Table>
+);
 
 const PatientManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -101,34 +104,42 @@ const PatientManagement = () => {
     }
   };
 
-  const filteredPatients = patients?.filter(p => 
-      p.full_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      p.nik.includes(searchTerm) || 
+  const filteredPatients = patients?.filter(p =>
+      p.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.nik.includes(searchTerm) ||
       p.phone_number.includes(searchTerm) ||
       p.patient_number?.toLowerCase().includes(searchTerm.toLowerCase())) || [];
 
   return <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
+      <Card className="bg-surface-container-lowest shadow-sm">
+        <CardHeader className="pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <CardTitle className="flex items-center gap-2"><User className="w-5 h-5 text-blue-600" />Manajemen Pasien</CardTitle>
-              <CardDescription>Kelola data pasien sesuai dengan Permenkes No. 24/2022</CardDescription>
+              <CardTitle className="flex items-center gap-2 text-primary">
+                <div className="w-9 h-9 rounded-xl bg-secondary-fixed flex items-center justify-center">
+                  <User className="w-5 h-5 text-on-secondary-fixed" />
+                </div>
+                Manajemen Pasien
+              </CardTitle>
+              <CardDescription className="mt-2">Kelola data pasien sesuai dengan Permenkes No. 24/2022</CardDescription>
             </div>
             <Dialog open={isFormOpen} onOpenChange={setFormOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-blue-600 hover:bg-blue-700"><Plus className="w-4 h-4 mr-2" />Tambah Pasien</Button>
+                <Button variant="medical" className="gap-2 w-full sm:w-auto justify-center">
+                  <Plus className="w-4 h-4" />
+                  Tambah Pasien
+                </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[600px] flex flex-col max-h-[90vh]">
+              <DialogContent className="sm:max-w-[600px] flex flex-col max-h-[90vh] bg-surface-container-lowest">
                 <DialogHeader>
-                  <DialogTitle>Tambah Pasien Baru</DialogTitle>
-                  <DialogDescription>Masukkan data pasien baru. Pastikan NIK valid dan lengkap.</DialogDescription>
+                  <DialogTitle className="text-on-surface">Tambah Pasien Baru</DialogTitle>
+                  <DialogDescription className="text-on-surface-variant">Masukkan data pasien baru. Pastikan NIK valid dan lengkap.</DialogDescription>
                 </DialogHeader>
                 <div className="flex-grow overflow-y-auto py-4 pr-6 -mr-6">
                   <PatientForm onSubmit={handleAddPatient} initialData={undefined} />
                 </div>
                 <DialogFooter>
-                  <Button type="submit" form="patient-form" disabled={isAdding} className="bg-blue-600 hover:bg-blue-700">
+                  <Button type="submit" form="patient-form" disabled={isAdding} variant="medical" className="gap-2">
                     {isAdding ? 'Menyimpan...' : 'Simpan Pasien'}
                   </Button>
                 </DialogFooter>
@@ -139,98 +150,117 @@ const PatientManagement = () => {
         <CardContent>
           <div className="flex items-center gap-4 mb-6">
             <div className="relative flex-1">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <Input placeholder="Cari berdasarkan nama, NIK, No. Pasien, atau nomor telepon..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-10" />
+              <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-on-surface-variant" />
+              <Input
+                placeholder="Cari berdasarkan nama, NIK, No. Pasien, atau nomor telepon..."
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                className="pl-10 bg-surface-container-low border-0 focus:bg-surface-container focus:ring-2 focus:ring-primary/30"
+              />
             </div>
           </div>
 
           {isLoading ? <TableSkeleton /> : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>No. Pasien</TableHead>
-                  <TableHead>Nama Lengkap</TableHead>
-                  <TableHead>NIK</TableHead>
-                  <TableHead>No. Telepon</TableHead>
-                  <TableHead className="text-right">Aksi</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredPatients.length > 0 ? (
-                  filteredPatients.map((patient) => (
-                    <TableRow key={patient.id}>
-                      <TableCell className="font-medium">{patient.patient_number}</TableCell>
-                      <TableCell className="font-medium">{patient.full_name}</TableCell>
-                      <TableCell>{patient.nik}</TableCell>
-                      <TableCell>{patient.phone_number}</TableCell>
-                      <TableCell className="text-right space-x-2">
-                        <Button variant="outline" size="sm" onClick={() => setViewingPatientRecords(patient)}>
-                          <FileText className="w-4 h-4 mr-1" />
-                          Rekam Medis
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => setEditingPatient(patient)}>
-                          Edit
-                        </Button>
+            <div className="rounded-xl overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent border-b border-outline-variant/20">
+                    <TableHead className="text-on-surface-variant font-semibold">No. Pasien</TableHead>
+                    <TableHead className="text-on-surface-variant font-semibold">Nama Lengkap</TableHead>
+                    <TableHead className="text-on-surface-variant font-semibold">NIK</TableHead>
+                    <TableHead className="text-on-surface-variant font-semibold">No. Telepon</TableHead>
+                    <TableHead className="text-right text-on-surface-variant font-semibold">Aksi</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredPatients.length > 0 ? (
+                    filteredPatients.map((patient) => (
+                      <TableRow key={patient.id} className="hover:bg-surface-container-low border-b border-outline-variant/10">
+                        <TableCell className="font-medium text-on-surface">{patient.patient_number}</TableCell>
+                        <TableCell className="font-medium text-on-surface">{patient.full_name}</TableCell>
+                        <TableCell className="text-on-surface-variant">{patient.nik}</TableCell>
+                        <TableCell className="text-on-surface-variant">{patient.phone_number}</TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="secondary-container"
+                              size="sm"
+                              onClick={() => setViewingPatientRecords(patient)}
+                              className="gap-1.5 text-on-secondary-container"
+                            >
+                              <FileText className="w-3.5 h-3.5" />
+                              Rekam Medis
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setEditingPatient(patient)}
+                            >
+                              Edit
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center h-32 text-on-surface-variant">
+                        <div className="flex flex-col items-center gap-2 py-8">
+                          <User className="w-10 h-10 text-on-surface-variant/40" />
+                          <p>Tidak ada pasien ditemukan.</p>
+                        </div>
                       </TableCell>
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center h-24">
-                      Tidak ada pasien ditemukan.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
 
       <Dialog open={!!editingPatient} onOpenChange={isOpen => !isOpen && setEditingPatient(null)}>
-        <DialogContent className="sm:max-w-[600px] flex flex-col max-h-[90vh]">
+        <DialogContent className="sm:max-w-[600px] flex flex-col max-h-[90vh] bg-surface-container-lowest">
           <DialogHeader>
-            <DialogTitle>Edit Pasien</DialogTitle>
-            <DialogDescription>Perbarui data pasien. Pastikan data akurat.</DialogDescription>
+            <DialogTitle className="text-on-surface">Edit Pasien</DialogTitle>
+            <DialogDescription className="text-on-surface-variant">Perbarui data pasien. Pastikan data akurat.</DialogDescription>
           </DialogHeader>
           <div className="flex-grow overflow-y-auto py-4 pr-6 -mr-6">
             {editingPatient && <PatientForm onSubmit={handleUpdatePatient} initialData={editingPatient} />}
           </div>
           <DialogFooter>
-            <Button type="submit" form="patient-form" disabled={isUpdating} className="bg-blue-600 hover:bg-blue-700">
+            <Button type="submit" form="patient-form" disabled={isUpdating} variant="medical" className="gap-2">
               {isUpdating ? 'Menyimpan...' : 'Simpan Perubahan'}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
+
       <Dialog open={!!viewingPatientRecords} onOpenChange={isOpen => {
         if (!isOpen) {
           setViewingPatientRecords(null);
           setIsAddingMedicalRecord(false);
         }
       }}>
-        <DialogContent className="sm:max-w-4xl flex flex-col max-h-[90vh]">
+        <DialogContent className="sm:max-w-4xl flex flex-col max-h-[90vh] bg-surface-container-lowest">
           <DialogHeader>
-            <div className="flex justify-between items-start">
+            <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
               <div>
-                <DialogTitle>Rekam Medis: {viewingPatientRecords?.full_name}</DialogTitle>
-                <DialogDescription>No. Pasien: {viewingPatientRecords?.patient_number}</DialogDescription>
+                <DialogTitle className="text-on-surface">Rekam Medis: {viewingPatientRecords?.full_name}</DialogTitle>
+                <DialogDescription className="text-on-surface-variant">No. Pasien: {viewingPatientRecords?.patient_number}</DialogDescription>
               </div>
               {!isAddingMedicalRecord && (
-                <div className="text-right">
-                  <div className="h-8" /> {/* Spacer for the close button */}
-                  <Button onClick={() => setIsAddingMedicalRecord(true)} className="bg-blue-600 hover:bg-blue-700">
-                    <Plus className="w-4 h-4 mr-2" /> Tambah Rekam Medis
-                  </Button>
-                </div>
+                <Button onClick={() => setIsAddingMedicalRecord(true)} variant="medical" className="gap-2 w-full sm:w-auto justify-center">
+                  <Plus className="w-4 h-4" />
+                  Tambah Rekam Medis
+                </Button>
               )}
             </div>
           </DialogHeader>
           <div className="flex-grow overflow-y-auto py-4 pr-6 -mr-6">
             {viewingPatientRecords && (
               isAddingMedicalRecord ? (
-                <MedicalRecordForm 
+                <MedicalRecordForm
                   patientId={viewingPatientRecords.id}
                   onSuccess={() => setIsAddingMedicalRecord(false)}
                   onCancel={() => setIsAddingMedicalRecord(false)}

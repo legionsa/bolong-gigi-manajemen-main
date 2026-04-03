@@ -98,20 +98,22 @@ export default function DoctorManagement() {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
+    <Card className="bg-surface-container-lowest shadow-sm">
+      <CardHeader className="pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <CardTitle className="flex items-center gap-2">
-              <User className="w-5 h-5 text-blue-600" />
+            <CardTitle className="flex items-center gap-2 text-primary">
+              <div className="w-9 h-9 rounded-xl bg-secondary-fixed flex items-center justify-center">
+                <User className="w-5 h-5 text-on-secondary-fixed" />
+              </div>
               Manajemen Dokter
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="mt-2">
               Kelola data dokter dan jadwal ketersediaan.
             </CardDescription>
           </div>
-          <Button onClick={() => setModalOpen(true)} className="bg-blue-600 hover:bg-blue-500">
-            <Plus className="w-4 h-4 mr-1" />
+          <Button onClick={() => setModalOpen(true)} variant="medical" className="gap-2 w-full sm:w-auto justify-center">
+            <Plus className="w-4 h-4" />
             Tambah Dokter
           </Button>
         </div>
@@ -119,7 +121,7 @@ export default function DoctorManagement() {
 
       <CardContent>
         {isLoading ? <DoctorTableSkeleton /> : (
-          <DoctorTable 
+          <DoctorTable
             doctors={doctors || []}
             selectedDoctorId={selectedDoctorId}
             setSelectedDoctorId={setSelectedDoctorId}
@@ -134,9 +136,9 @@ export default function DoctorManagement() {
 
         {/* Doctor Modal */}
         <Dialog open={modalOpen || !!editingDoctor} onOpenChange={() => { setModalOpen(false); setEditingDoctor(null); }}>
-          <DialogContent>
+          <DialogContent className="bg-surface-container-lowest">
             <DialogHeader>
-              <DialogTitle>{editingDoctor ? "Edit Dokter" : "Tambah Dokter"}</DialogTitle>
+              <DialogTitle className="text-on-surface">{editingDoctor ? "Edit Dokter" : "Tambah Dokter"}</DialogTitle>
               <DialogDescription>
                 {editingDoctor ? "Ubah detail dokter yang sudah ada." : "Isi form di bawah ini untuk menambahkan dokter baru."}
               </DialogDescription>
@@ -147,17 +149,17 @@ export default function DoctorManagement() {
 
         {/* Schedule Modal */}
         <Dialog open={scheduleModal.open} onOpenChange={() => setScheduleModal({ open: false, doctor: null, schedule: null })}>
-          <DialogContent>
+          <DialogContent className="bg-surface-container-lowest">
             <DialogHeader>
-              <DialogTitle>{scheduleModal.schedule ? "Edit Jadwal" : "Tambah Jadwal"}</DialogTitle>
+              <DialogTitle className="text-on-surface">{scheduleModal.schedule ? "Edit Jadwal" : "Tambah Jadwal"}</DialogTitle>
               <DialogDescription>
                 Atur jadwal spesifik atau mingguan untuk dokter yang dipilih.
               </DialogDescription>
             </DialogHeader>
-            <ScheduleForm 
-              initialData={scheduleModal.schedule} 
-              onSubmit={scheduleModal.schedule ? handleEditSchedule : handleAddSchedule} 
-              loading={updateLoading} 
+            <ScheduleForm
+              initialData={scheduleModal.schedule}
+              onSubmit={scheduleModal.schedule ? handleEditSchedule : handleAddSchedule}
+              loading={updateLoading}
             />
           </DialogContent>
         </Dialog>

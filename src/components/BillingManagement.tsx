@@ -40,10 +40,10 @@ export const BillingManagement = () => {
   };
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">Manajemen Tagihan</h1>
-        <p className="text-muted-foreground">Buat dan kelola faktur, layanan, dan item untuk pasien Anda</p>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl md:text-3xl font-extrabold text-primary tracking-tight font-headline">Manajemen Tagihan</h1>
+        <p className="text-on-surface-variant mt-1">Buat dan kelola faktur, layanan, dan item untuk pasien Anda</p>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

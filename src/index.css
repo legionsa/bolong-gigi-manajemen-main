@@ -2,93 +2,182 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
+/* Definition of the design system - The Clinical Precision Framework */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Clinical Precision Framework - Modern Medical Green Palette (HSL) */
+    --primary: hsl(185, 100%, 20%);
+    --primary-foreground: hsl(0, 0%, 100%);
+    --primary-container: hsl(185, 100%, 26%);
+    --on-primary: hsl(0, 0%, 100%);
+    --on-primary-container: hsl(185, 60%, 83%);
+    --primary-fixed: hsl(185, 76%, 88%);
+    --primary-fixed-dim: hsl(185, 45%, 72%);
+    --on-primary-fixed: hsl(185, 100%, 7%);
+    --on-primary-fixed-variant: hsl(185, 100%, 17%);
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --secondary: hsl(185, 12%, 36%);
+    --secondary-foreground: hsl(0, 0%, 100%);
+    --secondary-container: hsl(220, 40%, 88%);
+    --on-secondary: hsl(0, 0%, 100%);
+    --on-secondary-container: hsl(220, 20%, 30%);
+    --secondary-fixed: hsl(220, 40%, 88%);
+    --secondary-fixed-dim: hsl(220, 25%, 75%);
+    --on-secondary-fixed: hsl(220, 56%, 10%);
+    --on-secondary-fixed-variant: hsl(220, 25%, 25%);
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --tertiary: hsl(25, 60%, 40%);
+    --tertiary-foreground: hsl(0, 0%, 100%);
+    --tertiary-container: hsl(30, 60%, 30%);
+    --on-tertiary: hsl(0, 0%, 100%);
+    --on-tertiary-container: hsl(30, 80%, 90%);
+    --tertiary-fixed: hsl(30, 70%, 85%);
+    --tertiary-fixed-dim: hsl(30, 55%, 70%);
+    --on-tertiary-fixed: hsl(30, 100%, 8%);
+    --on-tertiary-fixed-variant: hsl(30, 80%, 18%);
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Surface Hierarchy - Tonal Depth (The "No-Line" Rule) */
+    --surface: hsl(210, 40%, 98%);
+    --surface-bright: hsl(210, 40%, 98%);
+    --surface-dim: hsl(210, 20%, 85%);
+    --surface-container-lowest: hsl(0, 0%, 100%);
+    --surface-container-low: hsl(210, 30%, 97%);
+    --surface-container: hsl(210, 20%, 93%);
+    --surface-container-high: hsl(210, 18%, 90%);
+    --surface-container-highest: hsl(210, 16%, 88%);
+    --surface-tint: hsl(185, 100%, 22%);
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --background: hsl(210, 40%, 98%);
+    --foreground: hsl(210, 20%, 10%);
+    --on-background: hsl(210, 20%, 10%);
+    --on-surface: hsl(210, 20%, 11%);
+    --on-surface-variant: hsl(210, 10%, 28%);
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --card: hsl(0, 0%, 100%);
+    --card-foreground: hsl(210, 20%, 10%);
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --popover: hsl(0, 0%, 100%);
+    --popover-foreground: hsl(210, 20%, 10%);
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --muted: hsl(210, 30%, 97%);
+    --muted-foreground: hsl(210, 10%, 40%);
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --accent: hsl(210, 30%, 97%);
+    --accent-foreground: hsl(210, 20%, 10%);
+
+    --destructive: hsl(0, 85%, 55%);
+    --destructive-foreground: hsl(0, 0%, 100%);
+    --error: hsl(0, 85%, 55%);
+    --error-container: hsl(0, 100%, 93%);
+    --on-error: hsl(0, 0%, 100%);
+    --on-error-container: hsl(0, 100%, 30%);
+
+    --border: hsl(210, 16%, 88%);
+    --outline: hsl(185, 8%, 45%);
+    --outline-variant: hsl(185, 14%, 78%);
+    --ring: hsl(185, 100%, 20%);
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
+    --inverse-surface: hsl(210, 20%, 20%);
+    --inverse-on-surface: hsl(210, 20%, 94%);
+    --inverse-primary: hsl(185, 45%, 72%);
 
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Sidebar tokens */
+    --sidebar-background: hsl(210, 25%, 96%);
+    --sidebar-foreground: hsl(210, 20%, 11%);
+    --sidebar-primary: hsl(185, 100%, 20%);
+    --sidebar-primary-foreground: hsl(0, 0%, 100%);
+    --sidebar-accent: hsl(185, 76%, 88%);
+    --sidebar-accent-foreground: hsl(185, 100%, 7%);
+    --sidebar-border: hsl(210, 16%, 88%);
+    --sidebar-ring: hsl(185, 100%, 20%);
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --primary: hsl(185, 45%, 72%);
+    --primary-foreground: hsl(185, 100%, 6%);
+    --primary-container: hsl(185, 100%, 16%);
+    --on-primary: hsl(185, 100%, 6%);
+    --on-primary-container: hsl(185, 60%, 83%);
+    --primary-fixed: hsl(185, 100%, 16%);
+    --primary-fixed-dim: hsl(185, 100%, 22%);
+    --on-primary-fixed: hsl(0, 0%, 100%);
+    --on-primary-fixed-variant: hsl(185, 45%, 72%);
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --secondary: hsl(185, 18%, 75%);
+    --secondary-foreground: hsl(185, 56%, 6%);
+    --secondary-container: hsl(220, 25%, 22%);
+    --on-secondary: hsl(185, 56%, 6%);
+    --on-secondary-container: hsl(220, 40%, 88%);
+    --secondary-fixed: hsl(220, 25%, 22%);
+    --secondary-fixed-dim: hsl(220, 18%, 30%);
+    --on-secondary-fixed: hsl(0, 0%, 100%);
+    --on-secondary-fixed-variant: hsl(220, 25%, 75%);
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --tertiary: hsl(30, 55%, 70%);
+    --tertiary-foreground: hsl(30, 100%, 6%);
+    --tertiary-container: hsl(30, 70%, 20%);
+    --on-tertiary: hsl(30, 100%, 6%);
+    --on-tertiary-container: hsl(30, 80%, 88%);
+    --tertiary-fixed: hsl(30, 70%, 20%);
+    --tertiary-fixed-dim: hsl(30, 60%, 28%);
+    --on-tertiary-fixed: hsl(0, 0%, 100%);
+    --on-tertiary-fixed-variant: hsl(30, 55%, 70%);
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --surface: hsl(210, 20%, 10%);
+    --surface-bright: hsl(210, 16%, 18%);
+    --surface-dim: hsl(210, 20%, 10%);
+    --surface-container-lowest: hsl(210, 20%, 6%);
+    --surface-container-low: hsl(210, 18%, 11%);
+    --surface-container: hsl(210, 16%, 16%);
+    --surface-container-high: hsl(210, 14%, 20%);
+    --surface-container-highest: hsl(210, 12%, 24%);
+    --surface-tint: hsl(185, 45%, 72%);
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --background: hsl(210, 20%, 10%);
+    --foreground: hsl(210, 20%, 94%);
+    --on-background: hsl(210, 20%, 94%);
+    --on-surface: hsl(210, 20%, 94%);
+    --on-surface-variant: hsl(210, 14%, 76%);
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --card: hsl(210, 18%, 11%);
+    --card-foreground: hsl(210, 20%, 94%);
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --popover: hsl(210, 18%, 11%);
+    --popover-foreground: hsl(210, 20%, 94%);
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --muted: hsl(210, 16%, 16%);
+    --muted-foreground: hsl(210, 14%, 76%);
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --accent: hsl(210, 16%, 16%);
+    --accent-foreground: hsl(210, 20%, 94%);
+
+    --destructive: hsl(0, 75%, 80%);
+    --destructive-foreground: hsl(0, 75%, 15%);
+    --error: hsl(0, 75%, 80%);
+    --error-container: hsl(0, 100%, 30%);
+    --on-error: hsl(0, 75%, 15%);
+    --on-error-container: hsl(0, 100%, 93%);
+
+    --border: hsl(210, 12%, 24%);
+    --outline: hsl(210, 14%, 76%);
+    --outline-variant: hsl(210, 10%, 28%);
+    --ring: hsl(185, 45%, 72%);
+
+    --inverse-surface: hsl(210, 20%, 94%);
+    --inverse-on-surface: hsl(210, 20%, 10%);
+    --inverse-primary: hsl(185, 100%, 22%);
+
+    --sidebar-background: hsl(210, 18%, 11%);
+    --sidebar-foreground: hsl(210, 20%, 94%);
+    --sidebar-primary: hsl(185, 45%, 72%);
+    --sidebar-primary-foreground: hsl(185, 100%, 6%);
+    --sidebar-accent: hsl(185, 100%, 16%);
+    --sidebar-accent-foreground: hsl(0, 0%, 100%);
+    --sidebar-border: hsl(210, 12%, 24%);
+    --sidebar-ring: hsl(185, 45%, 72%);
   }
 }
 
@@ -97,7 +186,330 @@
     @apply border-border;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6, .font-headline {
+    font-family: 'Manrope', sans-serif;
+  }
+
+  /* WCAG: Skip-to-content link */
+  .skip-to-content {
+    @apply absolute -top-full left-4 z-[999] px-4 py-2 bg-primary text-white font-semibold rounded-lg;
+    @apply focus:top-4 transition-all duration-200;
+  }
+
+  /* WCAG: Enhanced focus-visible ring for keyboard navigation */
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
+  /* Override for specific components */
+  .focus-ring:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 3px;
+    border-radius: 0.5rem;
+  }
+}
+
+/* ============================================================
+   KEYFRAME ANIMATIONS
+   ============================================================ */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fade-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33%       { transform: translateY(-12px) rotate(1.5deg); }
+  66%       { transform: translateY(-6px) rotate(-1deg); }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-20px); }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 hsl(var(--primary) / 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 16px hsl(var(--primary) / 0);
+  }
+}
+
+@keyframes slide-in-bottom {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes scale-in {
+  from { transform: scale(0.92); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+/* ============================================================
+   CUSTOM UTILITIES
+   ============================================================ */
+@layer utilities {
+  /* Glassmorphism */
+  .glass-nav {
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    background-color: hsl(var(--surface) / 0.75);
+  }
+
+  .glass-card {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    background-color: hsl(var(--surface-container-lowest) / 0.7);
+    border: 1px solid hsl(var(--outline-variant) / 0.15);
+  }
+
+  /* Clinical gradient */
+  .medical-gradient {
+    background: linear-gradient(135deg, hsl(185, 100%, 16%) 0%, hsl(185, 100%, 22%) 100%);
+  }
+
+  .medical-gradient-soft {
+    background: linear-gradient(135deg, hsl(185, 100%, 20%) 0%, hsl(185, 80%, 28%) 100%);
+  }
+
+  /* Ambient shadow (Elevation spec from DESIGN.md) */
+  .shadow-long {
+    box-shadow: 0px 20px 40px rgba(25, 28, 30, 0.06);
+  }
+
+  .shadow-long-md {
+    box-shadow: 0px 12px 28px rgba(25, 28, 30, 0.08);
+  }
+
+  /* Font utilities */
+  .font-headline {
+    font-family: 'Manrope', sans-serif;
+  }
+
+  /* Parallax base — JS will update --parallax-offset */
+  .parallax-layer {
+    will-change: transform;
+    transform: translateY(var(--parallax-offset, 0px));
+  }
+
+  /* Animation utilities */
+  .animate-fade-in-up {
+    animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .animate-fade-in-left {
+    animation: fade-in-left 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .animate-fade-in-right {
+    animation: fade-in-right 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.5s ease both;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-float-slow {
+    animation: float-slow 8s ease-in-out infinite;
+  }
+
+  .animate-spin-slow {
+    animation: spin-slow 20s linear infinite;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2.5s ease-in-out infinite;
+  }
+
+  .animate-slide-in-bottom {
+    animation: slide-in-bottom 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .animate-scale-in {
+    animation: scale-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .animate-marquee {
+    animation: marquee 28s linear infinite;
+  }
+
+  /* Delay utilities for staggered animations */
+  .animation-delay-100 { animation-delay: 100ms; }
+  .animation-delay-200 { animation-delay: 200ms; }
+  .animation-delay-300 { animation-delay: 300ms; }
+  .animation-delay-400 { animation-delay: 400ms; }
+  .animation-delay-500 { animation-delay: 500ms; }
+  .animation-delay-600 { animation-delay: 600ms; }
+  .animation-delay-700 { animation-delay: 700ms; }
+  .animation-delay-800 { animation-delay: 800ms; }
+
+  /* Shimmer text effect */
+  .shimmer-text {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--primary)) 0%,
+      hsl(var(--primary-container)) 40%,
+      hsl(var(--primary)) 80%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 3s linear infinite;
+  }
+
+  /* Blob / organic shape */
+  .blob-shape {
+    border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary-container)) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Section reveal — applied by IntersectionObserver */
+  .reveal-ready {
+    opacity: 0;
+    transform: translateY(32px);
+    transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .reveal-ready.revealed {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .reveal-ready-left {
+    opacity: 0;
+    transform: translateX(-32px);
+    transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .reveal-ready-left.revealed {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .reveal-ready-right {
+    opacity: 0;
+    transform: translateX(32px);
+    transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .reveal-ready-right.revealed {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* Keyboard nav highlight for table rows */
+  .grid-row-focus:focus {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: -2px;
+    border-radius: 0.75rem;
+  }
+}
+
+/* ============================================================
+   REDUCED MOTION — WCAG 2.1 2.3.3
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .parallax-layer {
+    transform: none !important;
+  }
+
+  .reveal-ready,
+  .reveal-ready-left,
+  .reveal-ready-right {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
   }
 }
