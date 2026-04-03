@@ -2,16 +2,18 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DoctorRow } from "./DoctorRow";
 
-export const DoctorTable = ({ 
-  doctors, 
-  selectedDoctorId, 
+export const DoctorTable = ({
+  doctors,
+  selectedDoctorId,
   setSelectedDoctorId,
   onEditDoctor,
   onDeleteDoctor,
   onOpenScheduleModal,
   onDeleteSchedule,
+  onAssignBranches,
   schedules,
-  isLoadingSchedules
+  isLoadingSchedules,
+  doctorBranchNames
 }: {
   doctors: any[],
   selectedDoctorId: string | null,
@@ -20,8 +22,10 @@ export const DoctorTable = ({
   onDeleteDoctor: (id: string) => void,
   onOpenScheduleModal: (doctor: any, schedule: any) => void,
   onDeleteSchedule: (id: string) => void,
+  onAssignBranches: (doctor: any) => void,
   schedules: any[],
-  isLoadingSchedules: boolean
+  isLoadingSchedules: boolean,
+  doctorBranchNames?: Record<string, string[]>
 }) => {
   return (
     <Table>
@@ -40,7 +44,7 @@ export const DoctorTable = ({
             </TableCell>
           </TableRow>}
         {doctors.map(doctor => (
-          <DoctorRow 
+          <DoctorRow
             key={doctor.id}
             doctor={doctor}
             isSelected={selectedDoctorId === doctor.id}
@@ -49,8 +53,10 @@ export const DoctorTable = ({
             onDeleteDoctor={onDeleteDoctor}
             onOpenScheduleModal={onOpenScheduleModal}
             onDeleteSchedule={onDeleteSchedule}
+            onAssignBranches={onAssignBranches}
             schedules={selectedDoctorId === doctor.id ? schedules : []}
             isLoadingSchedules={selectedDoctorId === doctor.id ? isLoadingSchedules : false}
+            branchNames={doctorBranchNames?.[doctor.id]}
           />
         ))}
       </TableBody>

@@ -18,6 +18,7 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [otp, setOtp] = useState("");
+  const [createdUserId, setCreatedUserId] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -30,7 +31,7 @@ const Register = () => {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: `${window.location.origin}/onboarding`,
           data: {
             full_name: fullName,
           }
@@ -44,17 +45,16 @@ const Register = () => {
           variant: "destructive",
         });
       } else if (data.user && !data.session) {
+        // Email confirmation required — clinic will be created after verification
+        setCreatedUserId(data.user.id);
         toast({
           title: "Kode OTP Dikirim",
           description: "Silakan cek email Anda untuk kode verifikasi",
         });
         setStep('verify');
       } else if (data.session) {
-        toast({
-          title: "Pendaftaran Berhasil",
-          description: "Akun berhasil dibuat dan Anda sudah masuk",
-        });
-        navigate("/dashboard");
+        // Email confirmation not required — create clinic and redirect to onboarding
+        await createClinicForUser(data.session.user.id, fullName);
       }
     } catch (error) {
       toast({
@@ -65,6 +65,53 @@ const Register = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const createClinicForUser = async (userId: string, name: string) => {
+    // Create a clinic with onboarding status
+    const { data: clinic, error: clinicError } = await supabase
+      .from('clinics')
+      .insert({
+        name: `${name}'s Clinic`,
+        status: 'onboarding',
+        head_name: name,
+      })
+      .select('id')
+      .single();
+
+    if (clinicError || !clinic) {
+      toast({
+        title: "Pendaftaran Gagal",
+        description: "Gagal membuat data Klinik. Silakan hubungi dukungan.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Link user as clinic_admin
+    const { error: linkError } = await supabase
+      .from('clinic_users')
+      .insert({
+        clinic_id: clinic.id,
+        user_id: userId,
+        role: 'clinic_admin',
+        status: 'active',
+      });
+
+    if (linkError) {
+      toast({
+        title: "Pendaftaran Gagal",
+        description: "Gagal mengatur akses Klinik. Silakan hubungi dukungan.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Pendaftaran Berhasil",
+      description: "Akun berhasil dibuat! Mari siapkan Klinik Anda.",
+    });
+    navigate("/onboarding");
   };
 
   const handleVerifyOTP = async (e: React.FormEvent) => {
@@ -84,12 +131,9 @@ const Register = () => {
           description: error.message,
           variant: "destructive",
         });
-      } else {
-        toast({
-          title: "Verifikasi Berhasil",
-          description: "Akun Anda telah diverifikasi!",
-        });
-        navigate("/dashboard");
+      } else if (data.user) {
+        // After verification, create the clinic
+        await createClinicForUser(data.user.id, fullName);
       }
     } catch (error) {
       toast({

@@ -11,6 +11,7 @@ import {
   Smile,
   Plus,
   ChevronRight,
+  BarChart3,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
@@ -29,11 +30,12 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: 'Overview',    href: '/dashboard',                  icon: LayoutDashboard },
+  { label: 'Analitik',   href: '/dashboard?tab=analytics',   icon: BarChart3 },
   { label: 'Pasien',      href: '/dashboard?tab=patients',     icon: Users },
   { label: 'Dokter',      href: '/dashboard?tab=doctors',      icon: Stethoscope },
+  { label: 'Staf',        href: '/dashboard?tab=employees',    icon: UserCog, superAdminOnly: true },
   { label: 'Jadwal',      href: '/dashboard?tab=appointments', icon: Calendar },
   { label: 'Tagihan',     href: '/dashboard?tab=billing',      icon: Receipt },
-  { label: 'Staff',       href: '/dashboard?tab=staff',        icon: UserCog, superAdminOnly: true },
 ]
 
 // ── Mobile bottom bar item ──────────────────────────────────

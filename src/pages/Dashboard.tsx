@@ -8,8 +8,12 @@ import DoctorManagement from '@/components/DoctorManagement'
 import AppointmentScheduler from '@/components/AppointmentScheduler'
 import { BillingManagement } from '@/components/BillingManagement'
 import { StaffManagement } from '@/components/StaffManagement'
+import { EmployeeManagement } from '@/components/EmployeeManagement'
 import { TodayAppointments } from '@/components/dashboard/TodayAppointments'
 import { RecentPulse } from '@/components/dashboard/RecentPatients'
+import Analytics from '@/pages/Analytics'
+import BranchManagement from '@/pages/BranchManagement'
+import BpjsClaimManagement from '@/pages/BpjsClaimManagement'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Card, CardContent } from '@/components/ui/card'
@@ -22,9 +26,13 @@ import React from 'react'
 const tabComponents: Record<string, React.ElementType> = {
   patients: PatientManagement,
   doctors: DoctorManagement,
+  employees: EmployeeManagement,
   appointments: AppointmentScheduler,
   billing: BillingManagement,
   staff: StaffManagement,
+  analytics: Analytics,
+  branches: BranchManagement,
+  bpjs: BpjsClaimManagement,
 }
 
 const DashboardSkeleton = () => (

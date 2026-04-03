@@ -11,6 +11,8 @@ export const patientSchema = z.object({
   place_of_birth: z.string().min(3, 'Tempat lahir minimal 3 karakter'),
   date_of_birth: z.string().refine((val) => !isNaN(Date.parse(val)), { message: "Tanggal lahir tidak valid" }),
   gender: z.enum(['Laki-laki', 'Perempuan'], { required_error: 'Jenis kelamin harus dipilih' }),
+  bpjs_number: z.string().optional().or(z.literal('')),
+  bpjs_active: z.boolean().optional(),
 });
 
 export const medicalRecordSchema = z.object({

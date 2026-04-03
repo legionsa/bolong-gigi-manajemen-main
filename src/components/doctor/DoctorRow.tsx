@@ -3,7 +3,7 @@ import { Fragment } from "react";
 import { TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PenLine, Trash2, Plus } from "lucide-react";
+import { PenLine, Trash2, Plus, Building2 } from "lucide-react";
 import { DoctorScheduleList } from "./schedule/DoctorScheduleList";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -15,8 +15,10 @@ export const DoctorRow = ({
   onDeleteDoctor,
   onOpenScheduleModal,
   onDeleteSchedule,
+  onAssignBranches,
   schedules,
   isLoadingSchedules,
+  branchNames,
 }: {
   doctor: any,
   isSelected: boolean,
@@ -25,8 +27,10 @@ export const DoctorRow = ({
   onDeleteDoctor: (id: string) => void,
   onOpenScheduleModal: (doctor: any, schedule: any) => void,
   onDeleteSchedule: (id: string) => void,
+  onAssignBranches: (doctor: any) => void,
   schedules: any[],
   isLoadingSchedules: boolean,
+  branchNames?: string[],
 }) => {
   return (
     <Fragment>
@@ -40,6 +44,10 @@ export const DoctorRow = ({
             <Button size="sm" variant="outline" onClick={onSelect}>
             {isSelected ? "Tutup Jadwal" : "Lihat Jadwal"}
           </Button>
+          <Button size="sm" variant="outline" onClick={() => onAssignBranches(doctor)} className="gap-1">
+            <Building2 className="w-3.5 h-3.5" />
+            Cabin
+          </Button>
           <Button size="icon" variant="ghost" onClick={() => onEditDoctor(doctor)}><PenLine className="w-4 h-4" /></Button>
           <Button size="icon" variant="destructive" onClick={() => onDeleteDoctor(doctor.id)}><Trash2 className="w-4 h-4" /></Button>
         </TableCell>
@@ -48,6 +56,14 @@ export const DoctorRow = ({
         <TableRow>
           <TableCell colSpan={4} className="p-0">
             <div className="p-4 bg-muted/10">
+              {branchNames && branchNames.length > 0 && (
+                <div className="mb-3 flex items-center gap-2">
+                  <Building2 className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">
+                    Cabin: {branchNames.join(", ")}
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between items-center mb-2">
                 <strong className="text-sm font-medium">Jadwal untuk Dr. {doctor.full_name}</strong>
                 <Button size="sm" variant="outline" onClick={() => onOpenScheduleModal(doctor, null)}>

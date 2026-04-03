@@ -28,6 +28,12 @@ import {
   Key,
   AlertTriangle,
   FileText,
+  Database,
+  HardDrive,
+  BarChart3,
+  ClipboardCheck,
+  Trash2,
+  Lock,
 } from 'lucide-react'
 
 interface NavItem {
@@ -69,6 +75,28 @@ const navGroups: NavGroup[] = [
       { label: 'Incidents', icon: <AlertTriangle className="w-5 h-5" />, href: '/controlroom/incidents' },
       { label: 'Announcements', icon: <Megaphone className="w-5 h-5" />, href: '/controlroom/announcements' },
       { label: 'Audit Log', icon: <FileText className="w-5 h-5" />, href: '/controlroom/audit-log' },
+    ],
+  },
+  {
+    label: 'SECURITY',
+    items: [
+      { label: 'TOTP Enrollment', icon: <Lock className="w-5 h-5" />, href: '/controlroom/totp-enrollment' },
+      { label: 'Security Settings', icon: <Shield className="w-5 h-5" />, href: '/controlroom/security-settings' },
+    ],
+  },
+  {
+    label: 'INFRASTRUCTURE',
+    items: [
+      { label: 'Database Explorer', icon: <Database className="w-5 h-5" />, href: '/controlroom/database' },
+      { label: 'Storage Monitor', icon: <HardDrive className="w-5 h-5" />, href: '/controlroom/storage' },
+      { label: 'Cost Monitor', icon: <DollarSign className="w-5 h-5" />, href: '/controlroom/costs' },
+      { label: 'Compliance', icon: <ClipboardCheck className="w-5 h-5" />, href: '/controlroom/compliance' },
+    ],
+  },
+  {
+    label: 'DATA MANAGEMENT',
+    items: [
+      { label: 'Data Retention', icon: <Trash2 className="w-5 h-5" />, href: '/controlroom/data-retention' },
     ],
   },
 ]

@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
-  const [step, setStep] = useState<'login' | 'verify'>('login');
+  const [step, setStep] = useState<'login' | 'verify' | 'magiclink-sent'>('login');
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -87,11 +87,7 @@ const Login = () => {
           variant: "destructive",
         });
       } else {
-        toast({
-          title: "Magic Link Dikirim",
-          description: "Cek email Anda untuk link login",
-        });
-        setStep('verify');
+        setStep('magiclink-sent');
       }
     } catch (error) {
       toast({
@@ -273,15 +269,41 @@ const Login = () => {
                   {isLoading ? "Memverifikasi..." : "Verifikasi"}
                 </Button>
 
-                <Button 
+                <Button
                   type="button"
                   variant="ghost"
-                  className="w-full font-bold h-11 text-muted-foreground hover:text-primary" 
+                  className="w-full font-bold h-11 text-muted-foreground hover:text-primary"
                   onClick={() => setStep('login')}
                 >
                   Kembali ke Login
                 </Button>
               </form>
+            )}
+
+            {step === 'magiclink-sent' && (
+              <div className="text-center space-y-5 py-4">
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                  <Mail className="w-8 h-8 text-primary" />
+                </div>
+                <div>
+                  <p className="font-bold text-on-surface text-lg">Cek Email Anda</p>
+                  <p className="text-sm text-on-surface-variant mt-1">
+                    Kami telah mengirimkan link login ke email{" "}
+                    <span className="font-semibold text-on-surface">{email}</span>
+                  </p>
+                </div>
+                <p className="text-xs text-on-surface-variant">
+                  Klik link di email untuk masuk. Link berlaku selama 1 jam.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full font-bold h-11"
+                  onClick={() => setStep('login')}
+                >
+                  Kembali ke Login
+                </Button>
+              </div>
             )}
 
             <div className="text-center space-y-2 pt-2">

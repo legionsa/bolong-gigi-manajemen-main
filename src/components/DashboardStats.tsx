@@ -65,7 +65,7 @@ const DashboardStats = () => {
     {
       title: "Total Pasien",
       value: totalPatients.toLocaleString(),
-      wittyLabel: `${totalPatients.toLocaleString()} Smilers`,
+      wittyLabel: `${totalPatients.toLocaleString()} Pasien`,
       subCopy: "Total pasien terdaftar",
       icon: Users,
       badge: { text: "+12% bulan ini", positive: true },

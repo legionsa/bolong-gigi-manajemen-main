@@ -18,16 +18,207 @@ import { Odontogram } from './Odontogram';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Badge } from '@/components/ui/badge';
-import { X as XIcon, Check as CheckIcon } from 'lucide-react';
+import { X as XIcon, Check as CheckIcon, Sparkles, Mic, History, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { AiNoteComposer } from '@/components/ai/AiNoteComposer';
+import { SmartCoding } from '@/components/ai/SmartCoding';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 const historyConditionsOptions = ['Diabetic', 'Hypertension', 'Haemophilia', 'Hepatitis', 'Gastric', 'HIV/AIDS'];
 const commonDrugAllergies = ['Penicillin', 'Aspirin', 'Ibuprofen', 'Sulfa', 'Codeine', 'Amoxicillin'];
+
+interface AiNoteDraft {
+  id: string;
+  appointment_id: string;
+  patient_id: string;
+  raw_transcription: string | null;
+  generated_note: string;
+  icd10_codes: { code: string; label: string; confidence: number }[];
+  icd9_codes: { code: string; label: string; confidence: number }[];
+  confidence_score: number | null;
+  status: 'draft' | 'approved' | 'rejected' | 'needs_revision';
+  rejected_reason: string | null;
+  created_at: string;
+  updated_at: string;
+}
 
 export const MedicalRecordForm = ({ patientId, onSuccess, onCancel }) => {
   const { doctors, isLoading: isLoadingDoctors } = useDoctors();
   const { addMedicalRecord, isAdding } = useMedicalRecords(patientId);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // AI Note state
+  const [isGeneratingNote, setIsGeneratingNote] = useState(false);
+  const [transcription, setTranscription] = useState('');
+  const [showAiComposer, setShowAiComposer] = useState(false);
+  const [currentDraft, setCurrentDraft] = useState<AiNoteDraft | null>(null);
+  const [showAiHistory, setShowAiHistory] = useState(false);
+
+  // Fetch AI note drafts for this patient
+  const { data: aiNoteDrafts, isLoading: isLoadingAiDrafts } = useQuery({
+    queryKey: ['aiNoteDrafts', patientId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('ai_note_drafts')
+        .select('*')
+        .eq('patient_id', patientId)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data as AiNoteDraft[];
+    },
+    enabled: !!patientId,
+  });
+
+  // Generate AI note mutation
+  const generateAiNoteMutation = useMutation({
+    mutationFn: async ({ appointmentId, transcriptionText }: { appointmentId: string; transcriptionText: string }) => {
+      const { data, error } = await supabase.functions.invoke('ai-note-generation', {
+        body: { appointment_id: appointmentId, transcription: transcriptionText, patient_id: patientId },
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      if (data?.draft_id) {
+        queryClient.invalidateQueries({ queryKey: ['aiNoteDrafts', patientId] });
+        setCurrentDraft(data);
+        setShowAiComposer(true);
+        toast({ title: 'Sukses', description: 'Catatan AI berhasil dibuat.' });
+      } else if (data?.error) {
+        throw new Error(data.error);
+      }
+    },
+    onError: (error) => {
+      toast({ title: 'Gagal', description: `Gagal membuat catatan AI: ${error.message}`, variant: 'destructive' });
+    },
+  });
+
+  // Approve AI note mutation
+  const approveAiNoteMutation = useMutation({
+    mutationFn: async ({ draftId, editedNote }: { draftId: string; editedNote?: string }) => {
+      const { data, error } = await supabase
+        .from('ai_note_drafts')
+        .update({ status: 'approved', approved_at: new Date().toISOString() })
+        .eq('id', draftId)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['aiNoteDrafts', patientId] });
+      toast({ title: 'Sukses', description: 'Catatan AI berhasil disetujui.' });
+      setShowAiComposer(false);
+      setCurrentDraft(null);
+    },
+    onError: (error) => {
+      toast({ title: 'Gagal', description: `Gagal menyetujui catatan AI: ${error.message}`, variant: 'destructive' });
+    },
+  });
+
+  // Reject AI note mutation
+  const rejectAiNoteMutation = useMutation({
+    mutationFn: async ({ draftId, reason }: { draftId: string; reason: string }) => {
+      const { data, error } = await supabase
+        .from('ai_note_drafts')
+        .update({ status: 'rejected', rejected_reason: reason })
+        .eq('id', draftId)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['aiNoteDrafts', patientId] });
+      toast({ title: 'Catatan AI Ditolak', description: 'Catatan AI telah ditolak.' });
+      setShowAiComposer(false);
+      setCurrentDraft(null);
+    },
+    onError: (error) => {
+      toast({ title: 'Gagal', description: `Gagal menolak catatan AI: ${error.message}`, variant: 'destructive' });
+    },
+  });
+
+  // Request revision mutation
+  const requestRevisionMutation = useMutation({
+    mutationFn: async ({ draftId, feedback }: { draftId: string; feedback: string }) => {
+      const { data, error } = await supabase
+        .from('ai_note_drafts')
+        .update({ status: 'needs_revision' })
+        .eq('id', draftId)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['aiNoteDrafts', patientId] });
+      toast({ title: 'Revisi Diminta', description: 'Feedback revisi telah dikirim.' });
+      setShowAiComposer(false);
+      setCurrentDraft(null);
+    },
+    onError: (error) => {
+      toast({ title: 'Gagal', description: `Gagal meminta revisi: ${error.message}`, variant: 'destructive' });
+    },
+  });
+
+  // Edit AI note mutation
+  const editAiNoteMutation = useMutation({
+    mutationFn: async ({ draftId, editedNote }: { draftId: string; editedNote: string }) => {
+      const { data, error } = await supabase
+        .from('ai_note_drafts')
+        .update({ generated_note: editedNote })
+        .eq('id', draftId)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['aiNoteDrafts', patientId] });
+      toast({ title: 'Berhasil', description: 'Catatan AI berhasil diperbarui.' });
+    },
+    onError: (error) => {
+      toast({ title: 'Gagal', description: `Gagal memperbarui catatan AI: ${error.message}`, variant: 'destructive' });
+    },
+  });
+
+  const handleGenerateAiNote = async (appointmentId: string) => {
+    if (!transcription.trim()) {
+      toast({ title: 'Peringatan', description: 'Masukkan transkrip suara terlebih dahulu.', variant: 'destructive' });
+      return;
+    }
+    setIsGeneratingNote(true);
+    try {
+      await generateAiNoteMutation.mutateAsync({ appointmentId, transcriptionText: transcription });
+    } finally {
+      setIsGeneratingNote(false);
+    }
+  };
+
+  const handleApproveNote = async (draftId: string, editedNote?: string) => {
+    await approveAiNoteMutation.mutateAsync({ draftId, editedNote });
+  };
+
+  const handleRejectNote = async (draftId: string, reason: string) => {
+    await rejectAiNoteMutation.mutateAsync({ draftId, reason });
+  };
+
+  const handleRequestRevision = async (draftId: string, feedback: string) => {
+    await requestRevisionMutation.mutateAsync({ draftId, feedback });
+  };
+
+  const handleEditNote = async (draftId: string, editedNote: string) => {
+    await editAiNoteMutation.mutateAsync({ draftId, editedNote });
+  };
+
+  const latestDraft = aiNoteDrafts?.find(d => d.status === 'draft');
   
   const form = useForm({
     resolver: zodResolver(medicalRecordSchema),
@@ -288,6 +479,192 @@ export const MedicalRecordForm = ({ patientId, onSuccess, onCancel }) => {
                 <FormMessage />
               </FormItem>
             )}
+          />
+        </div>
+
+        {/* AI Note Generation Section */}
+        <div className="border-t pt-4 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-purple-500" />
+              <h3 className="text-lg font-semibold">AI Note Generation</h3>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAiHistory(!showAiHistory)}
+              className="gap-2"
+            >
+              <History className="h-4 w-4" />
+              Riwayat AI
+              {aiNoteDrafts && aiNoteDrafts.length > 0 && (
+                <Badge variant="secondary" className="ml-1">{aiNoteDrafts.length}</Badge>
+              )}
+            </Button>
+          </div>
+
+          <Dialog open={showAiComposer} onOpenChange={setShowAiComposer}>
+            <DialogTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                className="gap-2 border-purple-200 bg-purple-50 hover:bg-purple-100"
+                onClick={() => {
+                  if (!currentDraft && latestDraft) {
+                    setCurrentDraft(latestDraft);
+                  }
+                  setShowAiComposer(true);
+                }}
+              >
+                <Sparkles className="h-4 w-4 text-purple-500" />
+                {latestDraft ? 'Lihat Draft AI' : 'Generate AI Note'}
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Catatan SOAP dari AI</DialogTitle>
+                <DialogDescription>
+                  Hasil generate catatan SOAP dari transkrip suara. Setujui atau edit sebelum disimpan ke rekam medis.
+                </DialogDescription>
+              </DialogHeader>
+              {currentDraft && (
+                <AiNoteComposer
+                  draft={currentDraft}
+                  onApprove={handleApproveNote}
+                  onReject={handleRejectNote}
+                  onRequestRevision={handleRequestRevision}
+                  onEdit={handleEditNote}
+                  isLoading={approveAiNoteMutation.isPending || rejectAiNoteMutation.isPending}
+                />
+              )}
+            </DialogContent>
+          </Dialog>
+
+          {/* Transcription Input for AI Generation */}
+          {!showAiComposer && (
+            <Card className="bg-muted/50">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Mic className="h-4 w-4" />
+                  Input Transkrip Suara
+                </CardTitle>
+                <CardDescription>
+                  Masukkan transkrip dari voice dictation untuk generate catatan SOAP otomatis
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Textarea
+                  placeholder="Tempelkan transkrip suara di sini... atau ketik hasil anamnesa pasien..."
+                  value={transcription}
+                  onChange={(e) => setTranscription(e.target.value)}
+                  className="min-h-[100px]"
+                />
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    onClick={() => handleGenerateAiNote(form.getValues('doctor_id') || 'manual')}
+                    disabled={isGeneratingNote || !transcription.trim()}
+                    className="gap-2 bg-purple-600 hover:bg-purple-700"
+                  >
+                    <Sparkles className="h-4 w-4" />
+                    {isGeneratingNote ? 'Menggenerate...' : 'Generate Catatan AI'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* AI Note History */}
+          {showAiHistory && aiNoteDrafts && aiNoteDrafts.length > 0 && (
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="ai-history">
+                <AccordionTrigger className="text-sm font-medium">
+                  Riwayat Catatan AI ({aiNoteDrafts.length})
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-3">
+                    {aiNoteDrafts.map((draft) => (
+                      <Card key={draft.id} className="bg-muted/30">
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <Badge
+                                  variant="secondary"
+                                  className={cn(
+                                    'text-xs',
+                                    draft.status === 'draft' && 'bg-blue-100 text-blue-700',
+                                    draft.status === 'approved' && 'bg-green-100 text-green-700',
+                                    draft.status === 'rejected' && 'bg-red-100 text-red-700',
+                                    draft.status === 'needs_revision' && 'bg-yellow-100 text-yellow-700'
+                                  )}
+                                >
+                                  {draft.status === 'draft' && 'Draft'}
+                                  {draft.status === 'approved' && 'Disetujui'}
+                                  {draft.status === 'rejected' && 'Ditolak'}
+                                  {draft.status === 'needs_revision' && 'Revisi'}
+                                </Badge>
+                                <span className="text-xs text-muted-foreground">
+                                  {new Date(draft.created_at).toLocaleString('id-ID', {
+                                    dateStyle: 'medium',
+                                    timeStyle: 'short',
+                                  })}
+                                </span>
+                              </div>
+                              <p className="text-sm line-clamp-2">{draft.generated_note}</p>
+                              {draft.icd10_codes && draft.icd10_codes.length > 0 && (
+                                <div className="flex flex-wrap gap-1 mt-2">
+                                  {draft.icd10_codes.slice(0, 3).map((code, idx) => (
+                                    <Badge key={idx} variant="outline" className="text-xs">
+                                      {code.code}
+                                    </Badge>
+                                  ))}
+                                  {draft.icd10_codes.length > 3 && (
+                                    <Badge variant="outline" className="text-xs">
+                                      +{draft.icd10_codes.length - 3}
+                                    </Badge>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                            {draft.status === 'draft' && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setCurrentDraft(draft);
+                                  setShowAiComposer(true);
+                                }}
+                              >
+                                Lihat
+                              </Button>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          )}
+        </div>
+
+        {/* Smart Coding Section - ICD-10/ICD-9 Suggestions */}
+        <div className="border-t pt-4 space-y-4">
+          <h3 className="text-lg font-semibold flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-blue-500" />
+            Kode ICD-10/ICD-9
+          </h3>
+          <SmartCoding
+            selectedIcd10Codes={form.getValues('diagnosis_codes')?.map(code => ({ code, label: code })) || []}
+            selectedIcd9Codes={[]}
+            onIcd10Select={(codes) => {
+              form.setValue('diagnosis_codes', codes.map(c => c.code), { shouldValidate: true });
+            }}
+            onIcd9Select={() => {}}
+            maxSelections={5}
           />
         </div>
 

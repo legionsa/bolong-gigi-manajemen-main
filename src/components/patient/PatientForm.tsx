@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useEffect, useState } from 'react';
-import { Edit } from 'lucide-react';
+import { Edit, Shield } from 'lucide-react';
 
 export const PatientForm = ({ onSubmit, initialData }) => {
   const [isPatientNumberEditable, setIsPatientNumberEditable] = useState(!initialData);
@@ -201,6 +201,68 @@ export const PatientForm = ({ onSubmit, initialData }) => {
             </FormItem>
           )}
         />
+
+        {/* BPJS Section */}
+        <div className="border-t border-outline-variant/20 pt-4 mt-4">
+          <div className="flex items-center gap-2 mb-4">
+            <Shield className="w-4 h-4 text-primary" />
+            <span className="text-sm font-semibold text-on-surface">Informasi BPJS</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="bpjs_number"
+              render={({ field }) => (
+                <FormItem>
+                  <Label htmlFor="bpjs_number">Nomor BPJS</Label>
+                  <FormControl>
+                    <Input
+                      id="bpjs_number"
+                      placeholder="16 digit nomor BPJS"
+                      {...field}
+                      value={field.value || ''}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="bpjs_active"
+              render={({ field }) => (
+                <FormItem>
+                  <Label htmlFor="bpjs_active">Status BPJS</Label>
+                  <Select
+                    onValueChange={(value) => field.onChange(value === 'true')}
+                    value={field.value ? 'true' : 'false'}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pilih status" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="true">Aktif</SelectItem>
+                      <SelectItem value="false">Tidak Aktif</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {form.watch('bpjs_number') && form.watch('bpjs_number').length > 0 && (
+            <div className="mt-3 rounded-lg bg-blue-50 border border-blue-200 p-3">
+              <p className="text-xs text-blue-700">
+                <span className="font-medium">Tips:</span> Pasien dengan BPJS aktif dapat mengajukan klaim melalui menu Manajemen Klaim BPJS.
+              </p>
+            </div>
+          )}
+        </div>
       </form>
     </Form>
   );

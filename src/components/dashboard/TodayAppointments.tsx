@@ -1,11 +1,14 @@
 import { useState, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Calendar, MoreHorizontal } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, MoreHorizontal, Video } from 'lucide-react';
 import { useAppointments } from '@/hooks/useAppointments';
-import { format, addDays, subDays, isToday } from 'date-fns';
+import { useTelehealth } from '@/hooks/useTelehealth';
+import { supabase } from '@/integrations/supabase/client';
+import { format, addDays, subDays, isToday, differenceInMinutes } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 
 type StatusKey = 'confirmed' | 'scheduled' | 'cancelled' | 'completed' | string;
 
@@ -45,6 +48,8 @@ function PatientAvatar({ name }: { name: string }) {
 export const TodayAppointments = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const { appointments, isLoading } = useAppointments();
+  const { sessionByAppointment, createSession, isCreatingSession } = useTelehealth();
+  const navigate = useNavigate();
   const tableRef = useRef<HTMLTableSectionElement>(null);
   const [focusedRow, setFocusedRow] = useState<number>(-1);
 
@@ -170,6 +175,35 @@ export const TodayAppointments = () => {
                 {filteredAppointments.map((appt, rowIndex) => {
                   const status = getStatus(appt.status);
                   const isEven = rowIndex % 2 === 0;
+                  const isTelehealth = appt.appointment_type === 'telehealth';
+                  const apptTime = new Date(appt.appointment_date_time);
+                  const now = new Date();
+                  // Check if appointment is within 15 minutes (either before or after now)
+                  const canJoin = isTelehealth && appt.status === 'confirmed' &&
+                    Math.abs(differenceInMinutes(apptTime, now)) <= 15;
+
+                  const handleJoinCall = async () => {
+                    if (!sessionByAppointment) return;
+                    // Check if session exists
+                    const { data: existingSession } = await supabase
+                      .from('telehealth_sessions')
+                      .select('id')
+                      .eq('appointment_id', appt.id)
+                      .maybeSingle();
+
+                    if (existingSession) {
+                      navigate(`/telehealth/${existingSession.id}`);
+                    } else {
+                      // Create session first
+                      const session = await createSession({
+                        appointment_id: appt.id,
+                        host_name: `Dr. ${appt.dentist_name}`,
+                        patient_name: appt.patient_name,
+                      });
+                      navigate(`/telehealth/${session.id}`);
+                    }
+                  };
+
                   return (
                     <tr
                       key={appt.id}
@@ -189,9 +223,14 @@ export const TodayAppointments = () => {
                     >
                       {/* Time */}
                       <td className="py-4 pl-3 first:rounded-l-2xl" role="gridcell">
-                        <p className="text-sm font-bold text-primary whitespace-nowrap">
-                          {format(new Date(appt.appointment_date_time), 'hh:mm a')}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          {isTelehealth ? (
+                            <Video className="w-4 h-4 text-primary flex-shrink-0" />
+                          ) : null}
+                          <p className="text-sm font-bold text-primary whitespace-nowrap">
+                            {format(new Date(appt.appointment_date_time), 'hh:mm a')}
+                          </p>
+                        </div>
                       </td>
 
                       {/* Patient */}
@@ -211,26 +250,47 @@ export const TodayAppointments = () => {
 
                       {/* Status badge */}
                       <td role="gridcell">
-                        <span
-                          className={cn(
-                            'text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider whitespace-nowrap',
-                            status.className
+                        <div className="flex items-center gap-1.5">
+                          <span
+                            className={cn(
+                              'text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider whitespace-nowrap',
+                              status.className
+                            )}
+                          >
+                            {status.label}
+                          </span>
+                          {isTelehealth && (
+                            <span className="text-[10px] font-black px-2 py-0.5 rounded bg-primary/10 text-primary uppercase tracking-wider">
+                              <Video className="w-3 h-3 inline mr-0.5" />
+                              Video
+                            </span>
                           )}
-                        >
-                          {status.label}
-                        </span>
+                        </div>
                       </td>
 
                       {/* Action */}
                       <td className="text-right pr-3 last:rounded-r-2xl" role="gridcell">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
-                          aria-label={`Opsi untuk ${appt.patient_name}`}
-                        >
-                          <MoreHorizontal className="w-4 h-4" />
-                        </Button>
+                        {canJoin ? (
+                          <Button
+                            size="sm"
+                            variant="medical"
+                            onClick={handleJoinCall}
+                            disabled={isCreatingSession}
+                            className="gap-1.5 h-8"
+                          >
+                            <Video className="w-3.5 h-3.5" />
+                            Gabung
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
+                            aria-label={`Opsi untuk ${appt.patient_name}`}
+                          >
+                            <MoreHorizontal className="w-4 h-4" />
+                          </Button>
+                        )}
                       </td>
                     </tr>
                   );
