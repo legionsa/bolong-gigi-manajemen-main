@@ -281,7 +281,7 @@ export default function DoctorManagement() {
 
         {/* Doctor Modal */}
         <Dialog open={modalOpen || !!editingDoctor} onOpenChange={() => { setModalOpen(false); setEditingDoctor(null); }}>
-          <DialogContent className="bg-surface-container-lowest">
+          <DialogContent className="sm:max-w-[480px] bg-white">
             <DialogHeader>
               <DialogTitle className="text-on-surface">{editingDoctor ? "Edit Dokter" : "Tambah Dokter"}</DialogTitle>
               <DialogDescription>

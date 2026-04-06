@@ -63,11 +63,24 @@ export const ItemList = () => {
     );
   }
 
+  if (!items || items.length === 0) {
+    return (
+      <Card>
+        <CardContent className="text-center py-8">
+          <p className="text-muted-foreground">Belum ada item yang dibuat</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Daftar Item</h2>
-        <Button onClick={() => setShowForm(true)}>
+        <Button
+          onClick={() => setShowForm(true)}
+          style={{ background: 'linear-gradient(135deg, hsl(185, 100%, 16%) 0%, hsl(185, 100%, 22%) 100%)', color: 'white' }}
+        >
           <Plus className="w-4 h-4 mr-2" />
           Tambah Item
         </Button>

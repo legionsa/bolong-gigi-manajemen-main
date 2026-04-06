@@ -19,47 +19,35 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const TITLE_OPTIONS = [
-  { value: '', label: 'Pilih Title' },
-  { value: 'dr.', label: 'dr.' },
-  { value: 'drg.', label: 'drg.' },
-  { value: 'Prof. Dr. dr', label: 'Prof. Dr. dr' },
-  { value: 'Prof. dr', label: 'Prof. dr' },
-  { value: 'Dr. dr', label: 'Dr. dr' },
-];
-
-const SPECIALIST_OPTIONS = [
-  { value: '', label: 'Pilih Gelar Spesialis (opsional)' },
-  { value: 'Sp.BM', label: 'Sp.BM (Bedah Mulut)' },
-  { value: 'Sp.Ort', label: 'Sp.Ort (Ortodonti)' },
-  { value: 'Sp.KG', label: 'Sp.KG (Kedokteran Gigi)' },
-  { value: 'Sp.KA', label: 'Sp.KA (Kesehatan Anak)' },
-  { value: 'Sp.Perio', label: 'Sp.Perio (Periodonsia)' },
-  { value: 'Sp.Prostodo', label: 'Sp.Prostodo (Prostodonti)' },
-  { value: 'Sp.Endodo', label: 'Sp.Endodo (Endodonti)' },
-  { value: 'M.Kes', label: 'M.Kes (Magister Kesehatan)' },
-  { value: 'S.KG', label: 'S.KG (Sarjana Kedokteran Gigi)' },
-];
-
 const ROLE_OPTIONS = [
-  { value: 'dokter', label: 'Dokter' },
   { value: 'front_desk', label: 'Front Desk' },
   { value: 'finance', label: 'Finance' },
   { value: 'perawat', label: 'Perawat' },
 ];
 
 const ROLE_COLORS: Record<string, string> = {
-  dokter: 'bg-primary/10 text-primary',
   front_desk: 'bg-blue-100 text-blue-800',
   finance: 'bg-green-100 text-green-800',
   perawat: 'bg-purple-100 text-purple-800',
 };
 
-const ROLE_PERMISSIONS: Record<string, string[]> = {
-  dokter: ['Melihat pasien', 'Edit rekam medis', 'Buat surat izin'],
-  front_desk: ['Melihat jadwal', 'Check-in pasien', 'Billing dasar'],
-  finance: ['Lihat billing', 'Mark as paid', 'Export laporan'],
-  perawat: ['Melihat pasien', 'Input tanda vital', 'Assist dokter'],
+const ROLE_PERMISSIONS: Record<string, { label: string; description: string }[]> = {
+  front_desk: [
+    { label: 'Melihat jadwal', description: 'Melihat jadwal appointment' },
+    { label: 'Check-in pasien', description: 'Check-in dan check-out pasien' },
+    { label: 'Billing dasar', description: 'Melihat dan membuat faktur' },
+  ],
+  finance: [
+    { label: 'Lihat billing', description: 'Melihat semua faktur' },
+    { label: 'Mark as paid', description: 'Tandai faktur sebagai lunas' },
+    { label: 'Export laporan', description: 'Export laporan keuangan' },
+  ],
+  perawat: [
+    { label: 'Melihat jadwal', description: 'Melihat jadwal appointment' },
+    { label: 'Check-in pasien', description: 'Check-in dan check-out pasien' },
+    { label: 'Billing dasar', description: 'Melihat dan membuat faktur' },
+    { label: 'Assist dokter', description: 'Membantu dokter saat tindakan' },
+  ],
 };
 
 interface Employee {
@@ -111,7 +99,7 @@ export const EmployeeManagement = () => {
   const [inviteRole, setInviteRole] = useState('front_desk');
   const [inviteName, setInviteName] = useState('');
   const [inviteTitle, setInviteTitle] = useState('');
-  const [inviteSpecialist, setInviteSpecialist] = useState('');
+  const [inviteDegree, setInviteDegree] = useState('');
   const [inviting, setInviting] = useState(false);
   const [clinicId, setClinicId] = useState<string | null>(null);
 
@@ -171,20 +159,17 @@ export const EmployeeManagement = () => {
     setInviting(true);
 
     try {
-      // Create auth user invite
-      const fullNameWithTitle = inviteTitle
-        ? `${inviteTitle} ${inviteName}${inviteSpecialist ? ', ' + inviteSpecialist : ''}`
-        : `${inviteName}${inviteSpecialist ? ', ' + inviteSpecialist : ''}`;
+      // Build full name with title and degree for nurses
+      let fullName = inviteName;
+      if (inviteRole === 'perawat' && inviteTitle) {
+        fullName = `${inviteTitle} ${inviteName}${inviteDegree ? ', ' + inviteDegree : ''}`;
+      }
 
       const { data, error } = await supabase.auth.admin.inviteUserByEmail(inviteEmail, {
-        data: { full_name: fullNameWithTitle, role: inviteRole }
+        data: { full_name: fullName, role: inviteRole }
       });
 
       if (error) throw error;
-
-      // The user will be created when they accept invite.
-      // We still need to create clinic_users entry after they accept.
-      // For pending invites, we'll create the entry once the user is created.
 
       toast({
         title: "Undangan Terkirim",
@@ -195,7 +180,7 @@ export const EmployeeManagement = () => {
       setInviteEmail('');
       setInviteName('');
       setInviteTitle('');
-      setInviteSpecialist('');
+      setInviteDegree('');
       setInviteRole('front_desk');
     } catch (error: any) {
       toast({
@@ -284,18 +269,41 @@ export const EmployeeManagement = () => {
                 </DialogHeader>
                 <form onSubmit={handleInvite} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="invite-title" className="font-semibold text-on-surface">Title</Label>
+                    <Label htmlFor="invite-role" className="font-semibold text-on-surface">Role</Label>
                     <select
-                      id="invite-title"
-                      value={inviteTitle}
-                      onChange={e => setInviteTitle(e.target.value)}
-                      className="w-full h-12 px-4 rounded-xl bg-surface-container-low border-none text-on-surface focus:ring-2 focus:ring-primary appearance-none"
+                      id="invite-role"
+                      value={inviteRole}
+                      onChange={e => {
+                        const newRole = e.target.value;
+                        setInviteRole(newRole);
+                        if (newRole === 'perawat') {
+                          setInviteTitle('Ns.');
+                        } else {
+                          setInviteTitle('');
+                        }
+                        setInviteDegree('');
+                        setInviteName('');
+                      }}
+                      className="w-full h-12 px-4 rounded-xl bg-white border border-outline text-on-surface focus:ring-2 focus:ring-primary/30 appearance-none"
                     >
-                      {TITLE_OPTIONS.map(t => (
-                        <option key={t.value} value={t.value}>{t.label}</option>
+                      {ROLE_OPTIONS.map(r => (
+                        <option key={r.value} value={r.value}>{r.label}</option>
                       ))}
                     </select>
                   </div>
+                  {inviteRole === 'perawat' && (
+                    <div className="space-y-2">
+                      <Label htmlFor="invite-title" className="font-semibold text-on-surface">Title</Label>
+                      <select
+                        id="invite-title"
+                        value={inviteTitle}
+                        disabled
+                        className="w-full h-12 px-4 rounded-xl bg-gray-100 border border-outline text-on-surface appearance-none cursor-not-allowed"
+                      >
+                        <option value="Ns.">Ns. (Ners)</option>
+                      </select>
+                    </div>
+                  )}
                   <div className="space-y-2">
                     <Label htmlFor="invite-name" className="font-semibold text-on-surface">Nama Lengkap</Label>
                     <Input
@@ -303,23 +311,25 @@ export const EmployeeManagement = () => {
                       value={inviteName}
                       onChange={e => setInviteName(e.target.value)}
                       placeholder="Nama lengkap staf"
-                      className="bg-surface-container-low border-none rounded-xl h-12"
+                      className="bg-white border border-outline rounded-xl h-12 focus:ring-2 focus:ring-primary/30"
                       required
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="invite-specialist" className="font-semibold text-on-surface">Gelar Spesialis</Label>
-                    <select
-                      id="invite-specialist"
-                      value={inviteSpecialist}
-                      onChange={e => setInviteSpecialist(e.target.value)}
-                      className="w-full h-12 px-4 rounded-xl bg-surface-container-low border-none text-on-surface focus:ring-2 focus:ring-primary appearance-none"
-                    >
-                      {SPECIALIST_OPTIONS.map(s => (
-                        <option key={s.value} value={s.value}>{s.label}</option>
-                      ))}
-                    </select>
-                  </div>
+                  {inviteRole === 'perawat' && (
+                    <div className="space-y-2">
+                      <Label htmlFor="invite-degree" className="font-semibold text-on-surface">Gelar</Label>
+                      <select
+                        id="invite-degree"
+                        value={inviteDegree}
+                        onChange={e => setInviteDegree(e.target.value)}
+                        className="w-full h-12 px-4 rounded-xl bg-white border border-outline text-on-surface focus:ring-2 focus:ring-primary/30 appearance-none"
+                      >
+                        <option value="">Pilih Gelar</option>
+                        <option value="S.Kep">S.Kep</option>
+                        <option value="A.Md.Kep">A.Md.Kep</option>
+                      </select>
+                    </div>
+                  )}
                   <div className="space-y-2">
                     <Label htmlFor="invite-email" className="font-semibold text-on-surface">Email</Label>
                     <Input
@@ -328,32 +338,26 @@ export const EmployeeManagement = () => {
                       value={inviteEmail}
                       onChange={e => setInviteEmail(e.target.value)}
                       placeholder="staf@klinikkamu.com"
-                      className="bg-surface-container-low border-none rounded-xl h-12"
+                      className="bg-white border border-outline rounded-xl h-12 focus:ring-2 focus:ring-primary/30"
                       required
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="invite-role" className="font-semibold text-on-surface">Role</Label>
-                    <select
-                      id="invite-role"
-                      value={inviteRole}
-                      onChange={e => setInviteRole(e.target.value)}
-                      className="w-full h-12 px-4 rounded-xl bg-surface-container-low border-none text-on-surface focus:ring-2 focus:ring-primary appearance-none"
-                    >
-                      {ROLE_OPTIONS.map(r => (
-                        <option key={r.value} value={r.value}>{r.label}</option>
+                  <div className="rounded-xl bg-surface-container-low p-3 mt-2">
+                    <p className="text-xs font-semibold text-on-surface-variant mb-2">Hak akses:</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {ROLE_OPTIONS.map(role => (
+                        <div key={role.value} className={`rounded-lg p-2 ${inviteRole === role.value ? 'bg-primary/10 border border-primary/30' : 'bg-surface-container-lowest'}`}>
+                          <p className="text-xs font-bold text-on-surface mb-1">{role.label}</p>
+                          <ul className="text-[10px] text-on-surface-variant space-y-0.5">
+                            {ROLE_PERMISSIONS[role.value]?.map(p => (
+                              <li key={p.label} className="flex items-start gap-1">
+                                <ShieldCheck className="w-2.5 h-2.5 text-primary flex-shrink-0 mt-0.5" />
+                                <span>{p.label}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
                       ))}
-                    </select>
-                    <div className="rounded-xl bg-surface-container-low p-3 mt-2">
-                      <p className="text-xs font-semibold text-on-surface-variant mb-1">Hak akses:</p>
-                      <ul className="text-xs text-on-surface-variant space-y-0.5">
-                        {ROLE_PERMISSIONS[inviteRole]?.map(p => (
-                          <li key={p} className="flex items-center gap-1.5">
-                            <ShieldCheck className="w-3 h-3 text-primary flex-shrink-0" />
-                            {p}
-                          </li>
-                        ))}
-                      </ul>
                     </div>
                   </div>
                   <DialogFooter>

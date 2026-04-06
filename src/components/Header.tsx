@@ -90,14 +90,6 @@ export const Header = () => {
               onBlur={() => setSearchFocused(false)}
             />
           </div>
-
-          {/* Witty tagline — desktop only */}
-          <p
-            className="hidden lg:block text-muted-foreground font-medium italic text-sm"
-            aria-hidden="true"
-          >
-            Another day, another set of smiles.
-          </p>
         </div>
 
         {/* ── Right: Notification, Help, Divider, User ── */}
