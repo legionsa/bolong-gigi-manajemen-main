@@ -4,9 +4,10 @@ import { Plus, UserPlus, Receipt, RefreshCw, ArrowRight } from 'lucide-react';
 import { usePatients } from '@/hooks/usePatients';
 import { useAppointments } from '@/hooks/useAppointments';
 import { useInvoices } from '@/hooks/useInvoices';
+import { useToast } from '@/hooks/use-toast';
 import { format, formatDistanceToNow } from 'date-fns';
 import { id } from 'date-fns/locale';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { PatientForm } from '@/components/patient/PatientForm';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
@@ -88,7 +89,26 @@ function useActivityFeed() {
 
 export const RecentPulse = () => {
   const { feed, isLoading } = useActivityFeed();
+  const { addPatient, isAdding } = usePatients();
+  const { toast } = useToast();
   const [showAddPatient, setShowAddPatient] = useState(false);
+
+  const handleAddPatient = async (formData) => {
+    try {
+      await addPatient(formData);
+      toast({
+        title: 'Sukses',
+        description: 'Pasien baru berhasil ditambahkan.'
+      });
+      setShowAddPatient(false);
+    } catch (error) {
+      toast({
+        title: 'Gagal',
+        description: `Gagal menambahkan pasien: ${error.message}`,
+        variant: 'destructive'
+      });
+    }
+  };
 
   return (
     <>
@@ -186,12 +206,14 @@ export const RecentPulse = () => {
             <DialogTitle>Tambah Pasien Baru</DialogTitle>
           </DialogHeader>
           <PatientForm
-            onSubmit={async (data) => {
-              console.log('New patient data:', data);
-              setShowAddPatient(false);
-            }}
+            onSubmit={handleAddPatient}
             initialData={null}
           />
+          <DialogFooter>
+            <Button type="submit" form="patient-form" disabled={isAdding} variant="medical" className="gap-2">
+              {isAdding ? 'Menyimpan...' : 'Simpan Pasien'}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>

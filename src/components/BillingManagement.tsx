@@ -8,17 +8,18 @@ import { ServiceList } from './services/ServiceList';
 import { ItemList } from './items/ItemList';
 import { useInvoices } from '@/hooks/useInvoices';
 import { useToast } from '@/hooks/use-toast';
+import { usePermissions } from '@/hooks/usePermissions';
 import { InvoiceFormData } from '@/lib/billing-schemas';
-import { supabase } from '@/integrations/supabase/client'; // For email sending
-import { Button } from '@/components/ui/button'; // For Send button
-import { Input } from '@/components/ui/input'; // For editable fields
-import { Textarea } from '@/components/ui/textarea'; // For editable fields
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 
 export const BillingManagement = () => {
   const [activeTab, setActiveTab] = useState('create');
-  const { createInvoice, isCreating, invoices, updateInvoice, isLoading: isInvoicesLoading } = useInvoices(); // Added invoices, updateInvoice and isLoading alias
+  const { createInvoice, isCreating, invoices, updateInvoice, isLoading: isInvoicesLoading } = useInvoices();
   const [editingInvoice, setEditingInvoice] = useState<(InvoiceFormData & { id: string; invoice_number: string; }) | null>(null);
   const { toast } = useToast();
+  const { can } = usePermissions();
 
   const handleCreateInvoice = async (data: InvoiceFormData) => {
     try {
@@ -47,13 +48,17 @@ export const BillingManagement = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="create">Buat Faktur</TabsTrigger>
-          <TabsTrigger value="list">Daftar Faktur</TabsTrigger>
-          <TabsTrigger value="edit-invoice" disabled={!editingInvoice}>Edit Faktur</TabsTrigger>
-          <TabsTrigger value="invoice-layout-editor" disabled={!editingInvoice}>Editor Tampilan Faktur</TabsTrigger>
-          <TabsTrigger value="services">Layanan</TabsTrigger>
-          <TabsTrigger value="items">Item</TabsTrigger>
+        <TabsList className="flex w-full overflow-x-auto gap-1">
+          <TabsTrigger value="create" className="text-xs sm:text-sm whitespace-nowrap flex-shrink-0 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4">Buat Faktur</TabsTrigger>
+          <TabsTrigger value="list" className="text-xs sm:text-sm whitespace-nowrap flex-shrink-0 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4">Daftar Faktur</TabsTrigger>
+          {can('billing.edit') && (
+            <>
+              <TabsTrigger value="edit-invoice" className="text-xs sm:text-sm whitespace-nowrap flex-shrink-0 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4">Edit Faktur</TabsTrigger>
+              <TabsTrigger value="invoice-layout-editor" className="text-xs sm:text-sm whitespace-nowrap flex-shrink-0 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4">Editor Tampilan</TabsTrigger>
+            </>
+          )}
+          <TabsTrigger value="services" className="text-xs sm:text-sm whitespace-nowrap flex-shrink-0 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4">Layanan</TabsTrigger>
+          <TabsTrigger value="items" className="text-xs sm:text-sm whitespace-nowrap flex-shrink-0 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4">Item</TabsTrigger>
         </TabsList>
 
         <TabsContent value="create" className="space-y-4">

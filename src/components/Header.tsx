@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useClinicSettings } from '@/hooks/useClinicSettings';
+import { useRoleDisplay } from '@/hooks/useRoleDisplay';
+import { useClinicUser } from '@/hooks/useClinicUser';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,9 +27,15 @@ import { cn } from '@/lib/utils';
 export const Header = () => {
   const { user, logout } = useAuth();
   const { settings } = useClinicSettings();
+  const { clinicUser } = useClinicUser();
   const clinicName = settings?.clinic_name || 'DentiCare Pro';
   const searchRef = useRef<HTMLInputElement>(null);
   const [searchFocused, setSearchFocused] = useState(false);
+
+  // Use role from clinic_users table, fallback to user_metadata
+  const userRole = clinicUser?.role || user?.user_metadata?.role || user?.user_metadata?.role_name;
+  const roleDisplay = useRoleDisplay(userRole);
+  const displayRole = roleDisplay?.label || 'Staf';
 
   const handleLogout = async () => {
     try { await logout(); } catch (e) { console.error(e); }
@@ -35,7 +43,6 @@ export const Header = () => {
 
   const userName =
     user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Dokter';
-  const userRole = user?.user_metadata?.role_name || 'Head Curator';
 
   return (
     <header
@@ -131,7 +138,7 @@ export const Header = () => {
                 <div className="text-right hidden sm:block">
                   <p className="text-sm font-bold text-on-surface leading-none">{userName}</p>
                   <p className="text-[10px] text-muted-foreground font-semibold mt-0.5 uppercase tracking-wide">
-                    {userRole}
+                    {displayRole}
                   </p>
                 </div>
 
@@ -142,9 +149,14 @@ export const Header = () => {
                     alt={`Foto profil ${userName}`}
                   />
                   <AvatarFallback className="bg-primary-fixed text-primary text-sm font-black">
-                    {(user?.user_metadata?.full_name || user?.email || 'U')
-                      .charAt(0)
-                      .toUpperCase()}
+                    {(() => {
+                      const name = user?.user_metadata?.full_name || user?.email || 'U';
+                      const parts = name.split(' ').filter(Boolean);
+                      if (parts.length >= 2) {
+                        return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+                      }
+                      return name.charAt(0).toUpperCase();
+                    })()}
                   </AvatarFallback>
                 </Avatar>
               </Button>

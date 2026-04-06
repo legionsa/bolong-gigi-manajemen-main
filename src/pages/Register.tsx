@@ -68,13 +68,35 @@ const Register = () => {
   };
 
   const createClinicForUser = async (userId: string, name: string) => {
-    // Create a clinic with onboarding status
+    // 1. Create account with pro_trial tier
+    const { data: account, error: accountError } = await supabase
+      .from('accounts')
+      .insert({
+        owner_user_id: userId,
+        tier: 'pro_trial',
+        trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+        clinics_used: 1,
+      })
+      .select('id')
+      .single();
+
+    if (accountError || !account) {
+      toast({
+        title: "Pendaftaran Gagal",
+        description: "Gagal membuat akun. Silakan hubungi dukungan.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // 2. Create clinic with onboarding status
     const { data: clinic, error: clinicError } = await supabase
       .from('clinics')
       .insert({
         name: `${name}'s Clinic`,
         status: 'onboarding',
         head_name: name,
+        account_id: account.id,
       })
       .select('id')
       .single();
@@ -88,14 +110,15 @@ const Register = () => {
       return;
     }
 
-    // Link user as clinic_admin
+    // 3. Link user as admin with account_id
     const { error: linkError } = await supabase
       .from('clinic_users')
       .insert({
         clinic_id: clinic.id,
         user_id: userId,
-        role: 'clinic_admin',
+        role: 'admin',
         status: 'active',
+        account_id: account.id,
       });
 
     if (linkError) {
@@ -134,6 +157,8 @@ const Register = () => {
       } else if (data.user) {
         // After verification, create the clinic
         await createClinicForUser(data.user.id, fullName);
+        // Navigate to onboarding after successful clinic creation
+        navigate("/onboarding");
       }
     } catch (error) {
       toast({

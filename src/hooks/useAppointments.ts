@@ -1,14 +1,38 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const useAppointments = () => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const fetchAppointments = async () => {
-    const { data, error } = await supabase.from('appointments').select('*');
+    let doctorId = null;
+
+    if (user) {
+      const { data: doctorData } = await supabase
+        .from('doctors')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (doctorData) {
+        doctorId = doctorData.id;
+      }
+    }
+
+    let query = supabase
+      .from('appointments')
+      .select('*')
+      .order('appointment_date_time', { ascending: false });
+
+    if (doctorId) {
+      query = query.eq('doctor_id', doctorId);
+    }
+
+    const { data, error } = await query;
     if (error) throw new Error(error.message);
-    return data;
+    return data || [];
   };
 
   const addAppointment = async (newAppointment) => {

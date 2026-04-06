@@ -11,6 +11,9 @@ import Dashboard from './pages/Dashboard';
 import NotFound from './pages/NotFound';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
+import { BillingSettings } from '@/pages/settings/BillingSettings';
+import { SuratIzinSettings } from '@/pages/settings/SuratIzinSettings';
+import { NotaKwitansiSettings } from '@/pages/settings/NotaKwitansiSettings';
 import Onboarding from './pages/Onboarding';
 import ProtectedRoute from './components/ProtectedRoute';
 import PortalLogin from './pages/portal/PortalLogin';
@@ -63,6 +66,9 @@ function App() {
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            <Route path="/settings/billing" element={<ProtectedRoute><BillingSettings /></ProtectedRoute>} />
+            <Route path="/surat-izin" element={<ProtectedRoute><SuratIzinSettings /></ProtectedRoute>} />
+            <Route path="/settings/nota" element={<ProtectedRoute><NotaKwitansiSettings /></ProtectedRoute>} />
             {/* Patient Portal Routes */}
             <Route path="/portal/login" element={<PortalLogin />} />
             <Route path="/portal/register" element={<PortalRegister />} />

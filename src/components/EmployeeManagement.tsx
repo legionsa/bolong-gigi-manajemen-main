@@ -19,28 +19,47 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 
+const TITLE_OPTIONS = [
+  { value: '', label: 'Pilih Title' },
+  { value: 'dr.', label: 'dr.' },
+  { value: 'drg.', label: 'drg.' },
+  { value: 'Prof. Dr. dr', label: 'Prof. Dr. dr' },
+  { value: 'Prof. dr', label: 'Prof. dr' },
+  { value: 'Dr. dr', label: 'Dr. dr' },
+];
+
+const SPECIALIST_OPTIONS = [
+  { value: '', label: 'Pilih Gelar Spesialis (opsional)' },
+  { value: 'Sp.BM', label: 'Sp.BM (Bedah Mulut)' },
+  { value: 'Sp.Ort', label: 'Sp.Ort (Ortodonti)' },
+  { value: 'Sp.KG', label: 'Sp.KG (Kedokteran Gigi)' },
+  { value: 'Sp.KA', label: 'Sp.KA (Kesehatan Anak)' },
+  { value: 'Sp.Perio', label: 'Sp.Perio (Periodonsia)' },
+  { value: 'Sp.Prostodo', label: 'Sp.Prostodo (Prostodonti)' },
+  { value: 'Sp.Endodo', label: 'Sp.Endodo (Endodonti)' },
+  { value: 'M.Kes', label: 'M.Kes (Magister Kesehatan)' },
+  { value: 'S.KG', label: 'S.KG (Sarjana Kedokteran Gigi)' },
+];
+
 const ROLE_OPTIONS = [
-  { value: 'receptionist', label: 'Resepsionis' },
-  { value: 'nurse', label: 'Perawat' },
-  { value: 'assistant', label: 'Asisten Dokter' },
-  { value: 'pharmacist', label: 'Apoteker' },
-  { value: 'admin', label: 'Admin Klinik' },
+  { value: 'dokter', label: 'Dokter' },
+  { value: 'front_desk', label: 'Front Desk' },
+  { value: 'finance', label: 'Finance' },
+  { value: 'perawat', label: 'Perawat' },
 ];
 
 const ROLE_COLORS: Record<string, string> = {
-  receptionist: 'bg-blue-100 text-blue-800',
-  nurse: 'bg-purple-100 text-purple-800',
-  assistant: 'bg-orange-100 text-orange-800',
-  pharmacist: 'bg-teal-100 text-teal-800',
-  admin: 'bg-gray-100 text-gray-800',
+  dokter: 'bg-primary/10 text-primary',
+  front_desk: 'bg-blue-100 text-blue-800',
+  finance: 'bg-green-100 text-green-800',
+  perawat: 'bg-purple-100 text-purple-800',
 };
 
 const ROLE_PERMISSIONS: Record<string, string[]> = {
-  receptionist: ['Melihat jadwal', 'Check-in pasien', 'Billing dasar'],
-  nurse: ['Melihat pasien', 'Input tanda vital', 'Assist dokter'],
-  assistant: ['Assist dokter', 'Lihat rekam medis (baca)'],
-  pharmacist: ['Lihat resep', 'Catat distribusi obat'],
-  admin: ['Semua fitur kecuali billing lengkap'],
+  dokter: ['Melihat pasien', 'Edit rekam medis', 'Buat surat izin'],
+  front_desk: ['Melihat jadwal', 'Check-in pasien', 'Billing dasar'],
+  finance: ['Lihat billing', 'Mark as paid', 'Export laporan'],
+  perawat: ['Melihat pasien', 'Input tanda vital', 'Assist dokter'],
 };
 
 interface Employee {
@@ -89,8 +108,10 @@ export const EmployeeManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isInviteOpen, setInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState('receptionist');
+  const [inviteRole, setInviteRole] = useState('front_desk');
   const [inviteName, setInviteName] = useState('');
+  const [inviteTitle, setInviteTitle] = useState('');
+  const [inviteSpecialist, setInviteSpecialist] = useState('');
   const [inviting, setInviting] = useState(false);
   const [clinicId, setClinicId] = useState<string | null>(null);
 
@@ -114,7 +135,7 @@ export const EmployeeManagement = () => {
     setClinicId(cu.clinic_id);
 
     // Get all clinic users (excluding dentists and admin owner)
-    const nonDoctorRoles = ['receptionist', 'nurse', 'assistant', 'pharmacist', 'admin'];
+    const nonDoctorRoles = ['front_desk', 'finance', 'perawat'];
     const { data: clinicUsers } = await supabase
       .from('clinic_users')
       .select('*')
@@ -151,8 +172,12 @@ export const EmployeeManagement = () => {
 
     try {
       // Create auth user invite
+      const fullNameWithTitle = inviteTitle
+        ? `${inviteTitle} ${inviteName}${inviteSpecialist ? ', ' + inviteSpecialist : ''}`
+        : `${inviteName}${inviteSpecialist ? ', ' + inviteSpecialist : ''}`;
+
       const { data, error } = await supabase.auth.admin.inviteUserByEmail(inviteEmail, {
-        data: { full_name: inviteName, role: inviteRole }
+        data: { full_name: fullNameWithTitle, role: inviteRole }
       });
 
       if (error) throw error;
@@ -169,7 +194,9 @@ export const EmployeeManagement = () => {
       setInviteOpen(false);
       setInviteEmail('');
       setInviteName('');
-      setInviteRole('receptionist');
+      setInviteTitle('');
+      setInviteSpecialist('');
+      setInviteRole('front_desk');
     } catch (error: any) {
       toast({
         title: "Gagal Mengirim Undangan",
@@ -248,7 +275,7 @@ export const EmployeeManagement = () => {
                   Undang Staf
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[480px] bg-surface-container-lowest">
+              <DialogContent className="sm:max-w-[480px] bg-white">
                 <DialogHeader>
                   <DialogTitle className="text-on-surface">Undang Staf Baru</DialogTitle>
                   <DialogDescription className="text-on-surface-variant">
@@ -256,6 +283,19 @@ export const EmployeeManagement = () => {
                   </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleInvite} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="invite-title" className="font-semibold text-on-surface">Title</Label>
+                    <select
+                      id="invite-title"
+                      value={inviteTitle}
+                      onChange={e => setInviteTitle(e.target.value)}
+                      className="w-full h-12 px-4 rounded-xl bg-surface-container-low border-none text-on-surface focus:ring-2 focus:ring-primary appearance-none"
+                    >
+                      {TITLE_OPTIONS.map(t => (
+                        <option key={t.value} value={t.value}>{t.label}</option>
+                      ))}
+                    </select>
+                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="invite-name" className="font-semibold text-on-surface">Nama Lengkap</Label>
                     <Input
@@ -266,6 +306,19 @@ export const EmployeeManagement = () => {
                       className="bg-surface-container-low border-none rounded-xl h-12"
                       required
                     />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="invite-specialist" className="font-semibold text-on-surface">Gelar Spesialis</Label>
+                    <select
+                      id="invite-specialist"
+                      value={inviteSpecialist}
+                      onChange={e => setInviteSpecialist(e.target.value)}
+                      className="w-full h-12 px-4 rounded-xl bg-surface-container-low border-none text-on-surface focus:ring-2 focus:ring-primary appearance-none"
+                    >
+                      {SPECIALIST_OPTIONS.map(s => (
+                        <option key={s.value} value={s.value}>{s.label}</option>
+                      ))}
+                    </select>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="invite-email" className="font-semibold text-on-surface">Email</Label>

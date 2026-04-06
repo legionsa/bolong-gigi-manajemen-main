@@ -378,7 +378,7 @@ const AppointmentScheduler = () => {
             </div>
             <Dialog open={isFormOpen} onOpenChange={setFormOpen}>
               <DialogTrigger asChild><Button variant="medical" className="gap-2 w-full sm:w-auto justify-center"><Plus className="w-4 h-4" />Buat Appointment</Button></DialogTrigger>
-              <DialogContent className="sm:max-w-[600px] flex flex-col max-h-[90vh] bg-surface-container-lowest">
+              <DialogContent className="sm:max-w-[600px] flex flex-col max-h-[90vh] bg-[hsl(0,0%,100%)]">
                 <DialogHeader>
                   <DialogTitle className="text-on-surface">Buat Appointment Baru</DialogTitle>
                   <DialogDescription>Jadwalkan appointment untuk pasien</DialogDescription>

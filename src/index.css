@@ -489,6 +489,13 @@
 }
 
 /* ============================================================
+   RADIX PORTAL BACKGROUNDS — force solid on all poppers
+   ============================================================ */
+[data-radix-popper-content-wrapper] {
+  background-color: hsl(0,0%,100%) !important;
+}
+
+/* ============================================================
    REDUCED MOTION — WCAG 2.1 2.3.3
    ============================================================ */
 @media (prefers-reduced-motion: reduce) {
@@ -511,5 +518,10 @@
     opacity: 1 !important;
     transform: none !important;
     transition: none !important;
+  }
+
+  /* Radix popper content fix for transparent backgrounds */
+  [data-radix-popper-content-wrapper] {
+    background-color: hsl(var(--surface-container-lowest)) !important;
   }
 }

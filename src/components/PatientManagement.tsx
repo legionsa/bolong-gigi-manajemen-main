@@ -13,6 +13,7 @@ import { MedicalRecordViewer } from "./patient/MedicalRecordViewer";
 import { MedicalRecordForm } from "./patient/MedicalRecordForm";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import { usePermissions } from "@/hooks/usePermissions";
 
 const TableSkeleton = () => (
   <Table>
@@ -59,9 +60,8 @@ const PatientManagement = () => {
     updatePatient,
     isUpdating
   } = usePatients();
-  const {
-    toast
-  } = useToast();
+  const { can, isLoading: isPermissionsLoading } = usePermissions();
+  const { toast } = useToast();
   const handleAddPatient = async formData => {
     try {
       await addPatient(formData);
@@ -123,6 +123,7 @@ const PatientManagement = () => {
               </CardTitle>
               <CardDescription className="mt-2">Kelola data pasien sesuai dengan Permenkes No. 24/2022</CardDescription>
             </div>
+            {!isPermissionsLoading && can('patients.create') && (
             <Dialog open={isFormOpen} onOpenChange={setFormOpen}>
               <DialogTrigger asChild>
                 <Button variant="medical" className="gap-2 w-full sm:w-auto justify-center">
@@ -135,7 +136,7 @@ const PatientManagement = () => {
                   <DialogTitle className="text-on-surface">Tambah Pasien Baru</DialogTitle>
                   <DialogDescription className="text-on-surface-variant">Masukkan data pasien baru. Pastikan NIK valid dan lengkap.</DialogDescription>
                 </DialogHeader>
-                <div className="flex-grow overflow-y-auto py-4 pr-6 -mr-6">
+                <div className="py-4">
                   <PatientForm onSubmit={handleAddPatient} initialData={undefined} />
                 </div>
                 <DialogFooter>
@@ -145,6 +146,7 @@ const PatientManagement = () => {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
+            )}
           </div>
         </CardHeader>
         <CardContent>
@@ -225,7 +227,7 @@ const PatientManagement = () => {
             <DialogTitle className="text-on-surface">Edit Pasien</DialogTitle>
             <DialogDescription className="text-on-surface-variant">Perbarui data pasien. Pastikan data akurat.</DialogDescription>
           </DialogHeader>
-          <div className="flex-grow overflow-y-auto py-4 pr-6 -mr-6">
+          <div className="py-4">
             {editingPatient && <PatientForm onSubmit={handleUpdatePatient} initialData={editingPatient} />}
           </div>
           <DialogFooter>

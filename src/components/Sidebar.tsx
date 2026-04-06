@@ -10,32 +10,36 @@ import {
   LogOut,
   Smile,
   Plus,
+  FileText,
   ChevronRight,
   BarChart3,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
 import { useClinicSettings } from '@/hooks/useClinicSettings'
+import { usePermissions } from '@/hooks/usePermissions'
 import { Button } from '@/components/ui/button'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useRef, useCallback } from 'react'
+import type { Permission } from '@/hooks/usePermissions'
 
 interface NavItem {
   label: string
   href: string
   icon: React.ElementType
   superAdminOnly?: boolean
+  requiredPermission?: Permission
 }
 
 const navItems: NavItem[] = [
-  { label: 'Overview',    href: '/dashboard',                  icon: LayoutDashboard },
-  { label: 'Analitik',   href: '/dashboard?tab=analytics',   icon: BarChart3 },
-  { label: 'Pasien',      href: '/dashboard?tab=patients',     icon: Users },
-  { label: 'Dokter',      href: '/dashboard?tab=doctors',      icon: Stethoscope },
-  { label: 'Staf',        href: '/dashboard?tab=employees',    icon: UserCog, superAdminOnly: true },
-  { label: 'Jadwal',      href: '/dashboard?tab=appointments', icon: Calendar },
-  { label: 'Tagihan',     href: '/dashboard?tab=billing',      icon: Receipt },
+  { label: 'Overview',    href: '/dashboard',                    icon: LayoutDashboard, requiredPermission: 'analytics.view' },
+  { label: 'Analitik',   href: '/dashboard?tab=analytics',     icon: BarChart3,        requiredPermission: 'analytics.view' },
+  { label: 'Pasien',      href: '/dashboard?tab=patients',     icon: Users,           requiredPermission: 'patients.view' },
+  { label: 'Dokter',      href: '/dashboard?tab=doctors',      icon: Stethoscope,     requiredPermission: 'staff.manage' },
+  { label: 'Staf',        href: '/dashboard?tab=employees',    icon: UserCog,         requiredPermission: 'staff.manage' },
+  { label: 'Jadwal',      href: '/dashboard?tab=appointments', icon: Calendar,       requiredPermission: 'appointments.view' },
+  { label: 'Surat Izin',  href: '/dashboard?tab=surat_izin',   icon: FileText,        requiredPermission: 'surat_izin.create' },
+  { label: 'Tagihan',     href: '/dashboard?tab=billing',     icon: Receipt,         requiredPermission: 'billing.view' },
 ]
 
 // ── Mobile bottom bar item ──────────────────────────────────
@@ -77,20 +81,20 @@ const SidebarContent = ({
   collapsed = false,
   clinicName,
   user,
-  userRole,
   isSuperAdmin,
   isActiveFn,
   onLogout,
   onNavClick,
+  visibleItems,
 }: {
   collapsed?: boolean
   clinicName: string
   user: ReturnType<typeof useAuth>['user']
-  userRole: string
   isSuperAdmin: boolean
   isActiveFn: (href: string) => boolean
   onLogout: () => void
   onNavClick: (href: string) => void
+  visibleItems: NavItem[]
 }) => {
   const navRef = useRef<HTMLElement>(null)
 
@@ -110,8 +114,6 @@ const SidebarContent = ({
     []
   )
 
-  const visibleItems = navItems.filter(item => !item.superAdminOnly || isSuperAdmin)
-
   return (
     <div className="flex flex-col h-full">
       {/* ── Logo ── */}
@@ -126,31 +128,6 @@ const SidebarContent = ({
             </span>
             <span className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground font-bold opacity-70">
               Clinical Curator
-            </span>
-          </div>
-        )}
-      </div>
-
-      {/* ── User info ── */}
-      <div
-        className={cn(
-          'flex items-center gap-3 px-4 py-3 mb-2',
-          collapsed ? 'flex-col px-2 py-3' : ''
-        )}
-      >
-        <Avatar className={cn('flex-shrink-0', collapsed ? 'w-10 h-10' : 'w-9 h-9')}>
-          <AvatarImage src={user?.user_metadata?.avatar_url} alt={user?.email} />
-          <AvatarFallback className="bg-secondary-fixed text-on-secondary-fixed text-sm font-semibold">
-            {user?.email?.charAt(0)?.toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-        {!collapsed && (
-          <div className="flex flex-col min-w-0">
-            <span className="text-sm font-semibold text-on-surface truncate">
-              {user?.user_metadata?.full_name || user?.email}
-            </span>
-            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mt-0.5">
-              {userRole}
             </span>
           </div>
         )}
@@ -276,10 +253,16 @@ export const Sidebar = () => {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
   const { settings } = useClinicSettings()
+  const { can, role } = usePermissions()
 
   const clinicName = settings?.clinic_name || 'DentiCare Pro'
-  const userRole   = user?.user_metadata?.role_name || 'Staf'
-  const isSuperAdmin = userRole === 'Super Admin'
+  const isSuperAdmin = role === 'superadmin'
+
+  const visibleItems = navItems.filter(item => {
+    if (item.superAdminOnly && !isSuperAdmin) return false;
+    if (item.requiredPermission && !can(item.requiredPermission)) return false;
+    return true;
+  });
 
   const handleLogout = async () => {
     try { await logout() } catch (e) { console.error('Logout failed:', e) }
@@ -301,11 +284,11 @@ export const Sidebar = () => {
   const sharedProps = {
     clinicName,
     user,
-    userRole,
     isSuperAdmin,
     isActiveFn: isActive,
     onLogout: handleLogout,
     onNavClick: handleNavClick,
+    visibleItems,
   }
 
   return (
@@ -331,8 +314,7 @@ export const Sidebar = () => {
         className="fixed bottom-0 left-0 right-0 h-16 bg-surface/90 backdrop-blur-xl border-t border-outline-variant/10 flex md:hidden z-50"
         aria-label="Navigasi bawah mobile"
       >
-        {navItems
-          .filter(item => !item.superAdminOnly || isSuperAdmin)
+        {visibleItems
           .slice(0, 5)
           .map(item => (
             <BottomNavItem

@@ -1,24 +1,34 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
-import { Skeleton } from '@/components/ui/skeleton';
+import { usePermissions } from '@/hooks/usePermissions';
+import { PermissionDenied } from '@/components/PermissionDenied';
+import type { Permission } from '@/hooks/usePermissions';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
+  requiredPermission?: Permission;
+  requiredRole?: string[];
 }
 
-const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
+const ProtectedRoute = ({ children, requiredPermission, requiredRole }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
+  const { can, role } = usePermissions();
 
+  // Show minimal loading state while auth is checking
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center">
-        <div className="w-full max-w-md p-6 space-y-4">
-          <div className="flex justify-center mb-6">
-            <Skeleton className="w-16 h-16 rounded-full" />
-          </div>
-          <Skeleton className="h-4 w-3/4 mx-auto" />
-          <Skeleton className="h-4 w-1/2 mx-auto" />
+      <div className="min-h-screen bg-surface flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div
+            className="w-12 h-12 rounded-full animate-spin"
+            style={{
+              background: 'conic-gradient(from 0deg, hsl(185, 100%, 16%) 0%, hsl(185, 100%, 22%) 100%)',
+              WebkitMask: 'radial-gradient(farthest-side, transparent 60%, black 61%)',
+              mask: 'radial-gradient(farthest-side, transparent 60%, black 61%)',
+            }}
+          />
+          <p className="text-muted-foreground text-sm">Memuat...</p>
         </div>
       </div>
     );
@@ -26,6 +36,13 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (requiredPermission && !can(requiredPermission)) {
+    return <PermissionDenied />;
+  }
+  if (requiredRole && role && !requiredRole.includes(role)) {
+    return <PermissionDenied />;
   }
 
   return <>{children}</>;

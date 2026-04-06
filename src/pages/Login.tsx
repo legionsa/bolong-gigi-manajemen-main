@@ -3,19 +3,19 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Mail, Lock, Eye, EyeOff, ArrowLeft, Sparkles } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { UpgradeModal } from "@/components/UpgradeModal";
 
 const Login = () => {
-  const [step, setStep] = useState<'login' | 'verify' | 'magiclink-sent'>('login');
+  const [step, setStep] = useState<'login' | 'magiclink-sent'>('login');
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [otp, setOtp] = useState("");
+  const [showTrialExpired, setShowTrialExpired] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -44,6 +44,41 @@ const Login = () => {
           });
         }
       } else {
+        // Check account tier and trial status
+        const { data: { user } } = await supabase.auth.getUser()
+
+        const { data: account } = await supabase
+          .from('accounts')
+          .select('*')
+          .eq('owner_user_id', user.id)
+          .single()
+
+        if (account) {
+          const now = new Date()
+          const trialEnd = account.trial_ends_at ? new Date(account.trial_ends_at) : null
+
+          if (account.tier === 'pro_trial' && trialEnd && trialEnd < now) {
+            // Trial just expired — show expired modal
+            localStorage.setItem('trial_just_expired', 'true')
+          }
+
+          if (account.tier === 'pro_trial' && trialEnd) {
+            const daysLeft = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+            if (daysLeft <= 3 && daysLeft > 0) {
+              toast({
+                title: "Pro Trial akan berakhir",
+                description: `Tersisa ${daysLeft} hari. Upgrade ke Pro untuk semua fitur.`,
+              })
+            }
+          }
+        }
+
+        if (localStorage.getItem('trial_just_expired') === 'true') {
+          localStorage.removeItem('trial_just_expired')
+          setShowTrialExpired(true)
+          return
+        }
+
         toast({
           title: "Login Berhasil",
           description: "Selamat datang kembali!",
@@ -100,41 +135,6 @@ const Login = () => {
     }
   };
 
-  const handleVerifyOTP = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const { error } = await supabase.auth.verifyOtp({
-        email,
-        token: otp,
-        type: 'email'
-      });
-
-      if (error) {
-        toast({
-          title: "Verifikasi Gagal",
-          description: error.message,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Login Berhasil",
-          description: "Selamat datang!",
-        });
-        navigate("/dashboard");
-      }
-    } catch (error) {
-      toast({
-        title: "Terjadi Kesalahan",
-        description: "Silakan coba lagi nanti.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-surface flex items-center justify-center p-4">
       {/* Background Accent from Landing Page Style */}
@@ -155,12 +155,12 @@ const Login = () => {
               <span className="text-white font-black text-2xl font-headline">DC</span>
             </div>
             <CardTitle className="text-2xl font-black text-primary font-headline">
-              {step === 'login' ? 'Masuk ke DentiCare Pro' : 'Verifikasi Magic Link'}
+              {step === 'login' ? 'Masuk ke DentiCare Pro' : 'Cek Email Anda'}
             </CardTitle>
             <CardDescription className="text-muted-foreground font-medium mt-1">
-              {step === 'login' 
+              {step === 'login'
                 ? 'Akses sistem manajemen klinik gigi Anda'
-                : 'Masukkan kode yang dikirim ke email Anda'
+                : 'Link login telah dikirim ke email Anda'
               }
             </CardDescription>
           </CardHeader>
@@ -239,45 +239,7 @@ const Login = () => {
                 </Button>
               </>
             ) : (
-              <form onSubmit={handleVerifyOTP} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="otp" className="font-bold text-on-surface text-center block">Kode Verifikasi</Label>
-                  <div className="flex justify-center">
-                    <InputOTP 
-                      maxLength={6} 
-                      value={otp} 
-                      onChange={setOtp}
-                    >
-                      <InputOTPGroup>
-                        <InputOTPSlot index={0} className="border-outline-variant/30 text-lg font-bold" />
-                        <InputOTPSlot index={1} className="border-outline-variant/30 text-lg font-bold" />
-                        <InputOTPSlot index={2} className="border-outline-variant/30 text-lg font-bold" />
-                        <InputOTPSlot index={3} className="border-outline-variant/30 text-lg font-bold" />
-                        <InputOTPSlot index={4} className="border-outline-variant/30 text-lg font-bold" />
-                        <InputOTPSlot index={5} className="border-outline-variant/30 text-lg font-bold" />
-                      </InputOTPGroup>
-                    </InputOTP>
-                  </div>
-                </div>
-
-                <Button 
-                  type="submit" 
-                  variant="medical"
-                  className="w-full text-base font-bold shadow-md shadow-primary/20 h-12" 
-                  disabled={isLoading || otp.length !== 6}
-                >
-                  {isLoading ? "Memverifikasi..." : "Verifikasi"}
-                </Button>
-
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="w-full font-bold h-11 text-muted-foreground hover:text-primary"
-                  onClick={() => setStep('login')}
-                >
-                  Kembali ke Login
-                </Button>
-              </form>
+              <div />
             )}
 
             {step === 'magiclink-sent' && (
@@ -322,6 +284,21 @@ const Login = () => {
               )}
             </div>
           </CardContent>
+          {showTrialExpired && (
+            <UpgradeModal
+              open
+              type="trial_expired"
+              trialDays={0}
+              onUpgrade={() => {
+                setShowTrialExpired(false)
+                navigate('/settings/billing')
+              }}
+              onClose={() => {
+                setShowTrialExpired(false)
+                navigate('/dashboard')
+              }}
+            />
+          )}
         </Card>
 
         <div className="mt-8 text-center text-xs font-bold tracking-wider uppercase text-muted-foreground/60">

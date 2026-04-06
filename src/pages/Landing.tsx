@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -16,6 +16,7 @@ import {
   Activity,
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { useAuth } from '@/contexts/AuthContext'
 
 // ── Scroll-reveal hook ──────────────────────────────────────
 function useReveal() {
@@ -230,6 +231,8 @@ function StatCard({ value, suffix, label, sub, delay }: (typeof stats)[0] & { de
 
 // ── Main Landing component ──────────────────────────────────
 const Landing = () => {
+  const { user } = useAuth()
+  const navigate = useNavigate()
   const heroBgOffset = useParallax(0.3)
   const heroFloatOffset = useParallax(0.15)
   const blurBlobOffset = useParallax(0.2)
@@ -283,20 +286,33 @@ const Landing = () => {
           </nav>
 
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="/login">Masuk</Link>
-            </Button>
-            <Button
-              variant="medical"
-              size="sm"
-              className="gap-2 shadow-md shadow-primary/20 animate-pulse-glow"
-              asChild
-            >
-              <Link to="/register">
-                <Sparkles className="w-3.5 h-3.5" />
-                Mulai Gratis
-              </Link>
-            </Button>
+            {user ? (
+              <Button
+                variant="default"
+                size="sm"
+                className="gap-2 shadow-md medical-gradient text-white"
+                onClick={() => navigate('/dashboard')}
+              >
+                Dashboard
+              </Button>
+            ) : (
+              <>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/login">Masuk</Link>
+                </Button>
+                <Button
+                  variant="medical"
+                  size="sm"
+                  className="gap-2 shadow-md shadow-primary/20 animate-pulse-glow"
+                  asChild
+                >
+                  <Link to="/register">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    Mulai Gratis
+                  </Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -402,28 +418,41 @@ const Landing = () => {
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 animate-fade-in-up animation-delay-300">
-                  <Button
-                    variant="medical"
-                    size="lg"
-                    className="gap-2 shadow-lg shadow-primary/25 text-base font-bold"
-                    asChild
-                  >
-                    <Link to="/register">
-                      <Sparkles className="w-4 h-4" />
-                      Mulai Gratis — 30 Hari
-                    </Link>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="gap-2 text-base font-bold"
-                    asChild
-                  >
-                    <a href="#features">
-                      Lihat Fitur
-                      <ArrowRight className="w-4 h-4" />
-                    </a>
-                  </Button>
+                  {user ? (
+                    <Button
+                      variant="default"
+                      size="lg"
+                      className="gap-2 shadow-lg text-white text-base font-bold medical-gradient"
+                      onClick={() => navigate('/dashboard')}
+                    >
+                      Dashboard
+                    </Button>
+                  ) : (
+                    <>
+                      <Button
+                        variant="medical"
+                        size="lg"
+                        className="gap-2 shadow-lg shadow-primary/25 text-base font-bold"
+                        asChild
+                      >
+                        <Link to="/register">
+                          <Sparkles className="w-4 h-4" />
+                          Mulai Gratis — 30 Hari
+                        </Link>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="lg"
+                        className="gap-2 text-base font-bold"
+                        asChild
+                      >
+                        <a href="#features">
+                          Lihat Fitur
+                          <ArrowRight className="w-4 h-4" />
+                        </a>
+                      </Button>
+                    </>
+                  )}
                 </div>
 
                 {/* Social proof mini row */}

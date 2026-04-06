@@ -1,5 +1,5 @@
 
-import { useSearchParams, Link } from 'react-router-dom'
+import { useSearchParams, Link, useNavigate } from 'react-router-dom'
 import { Sidebar } from '@/components/Sidebar'
 import { Header } from '@/components/Header'
 import DashboardStats from '@/components/DashboardStats'
@@ -14,6 +14,7 @@ import { RecentPulse } from '@/components/dashboard/RecentPatients'
 import Analytics from '@/pages/Analytics'
 import BranchManagement from '@/pages/BranchManagement'
 import BpjsClaimManagement from '@/pages/BpjsClaimManagement'
+import { SuratIzinSettings } from '@/pages/settings/SuratIzinSettings'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Card, CardContent } from '@/components/ui/card'
@@ -22,6 +23,12 @@ import { format } from 'date-fns'
 import { id as localeId } from 'date-fns/locale'
 import { useUserProfile } from '@/hooks/useUserProfile'
 import React from 'react'
+import { usePermissions } from '@/hooks/usePermissions'
+import { useRoleDisplay } from '@/hooks/useRoleDisplay'
+import { PermissionDenied } from '@/components/PermissionDenied'
+import { TrialBanner } from '@/components/TrialBanner'
+import { useAccountTier } from '@/hooks/useAccountTier'
+import type { Permission } from '@/hooks/usePermissions'
 
 const tabComponents: Record<string, React.ElementType> = {
   patients: PatientManagement,
@@ -33,6 +40,7 @@ const tabComponents: Record<string, React.ElementType> = {
   analytics: Analytics,
   branches: BranchManagement,
   bpjs: BpjsClaimManagement,
+  surat_izin: SuratIzinSettings,
 }
 
 const DashboardSkeleton = () => (
@@ -81,8 +89,12 @@ const DashboardLoadingScreen = () => (
 
 const Dashboard = () => {
   const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
   const activeTab = searchParams.get('tab') || 'dashboard'
   const { userProfile, isLoading: isLoadingProfile } = useUserProfile()
+  const { can, isAdmin, role } = usePermissions()
+  const { isTrial, trialDaysRemaining } = useAccountTier()
+  const roleDisplay = useRoleDisplay(role);
 
   const getGreeting = () => {
     const hour = new Date().getHours()
@@ -94,8 +106,27 @@ const Dashboard = () => {
 
   const ActiveComponent = tabComponents[activeTab]
 
+  // Permission check for tab access
+  const permissionMap: Record<string, Permission> = {
+    patients: 'patients.view',
+    doctors: 'staff.manage',
+    employees: 'staff.manage',
+    appointments: 'appointments.view',
+    billing: 'billing.view',
+    staff: 'staff.manage',
+    analytics: 'analytics.view',
+    branches: 'staff.manage',
+    bpjs: 'analytics.view',
+    surat_izin: 'surat_izin.create',
+  };
+  const requiredPermission = permissionMap[activeTab];
+
   if (isLoadingProfile) {
     return <DashboardLoadingScreen />
+  }
+
+  if (ActiveComponent && requiredPermission && !can(requiredPermission)) {
+    return <PermissionDenied />
   }
 
   return (
@@ -110,6 +141,13 @@ const Dashboard = () => {
       <div className="flex-1 flex flex-col min-w-0">
         <Header />
 
+        {isTrial && isAdmin && (
+          <TrialBanner
+            trialDaysRemaining={trialDaysRemaining || 0}
+            onUpgrade={() => navigate('/settings/billing')}
+          />
+        )}
+
         <main
           id="dashboard-main"
           className="flex-1 px-4 md:px-8 py-8 pb-24 lg:pb-8"
@@ -122,7 +160,7 @@ const Dashboard = () => {
               <div className="flex items-center justify-between mb-6 gap-4">
                 <div>
                   <h1 className="text-2xl md:text-3xl font-extrabold text-primary tracking-tight font-headline">
-                    {getGreeting()}, {userProfile?.user_metadata?.full_name?.split(' ')[0] || 'Dokter'}
+                    {getGreeting()}, {roleDisplay?.label || 'Staf'}
                   </h1>
                   <p className="text-on-surface-variant text-sm mt-0.5">
                     {format(new Date(), 'EEEE, dd MMMM yyyy', { locale: localeId })}

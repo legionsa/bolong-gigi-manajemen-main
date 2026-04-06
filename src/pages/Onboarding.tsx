@@ -49,7 +49,7 @@ const Onboarding = () => {
       .from('clinic_users')
       .select('clinic_id, role')
       .eq('user_id', user.id)
-      .eq('role', 'clinic_admin')
+      .eq('role', 'admin')
       .single();
 
     if (!clinicUser) {
@@ -154,6 +154,20 @@ const Onboarding = () => {
         .eq('id', clinicId);
 
       if (clinicError) throw clinicError;
+
+      // Update accounts.clinics_used to 1
+      const { data: cu } = await supabase
+        .from('clinic_users')
+        .select('account_id')
+        .eq('clinic_id', clinicId)
+        .single();
+
+      if (cu?.account_id) {
+        await supabase
+          .from('accounts')
+          .update({ clinics_used: 1 })
+          .eq('id', cu.account_id);
+      }
 
       // Create default operating hours for all 7 days if not already set
       const { data: existingHours } = await supabase
